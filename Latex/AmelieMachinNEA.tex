@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{comment}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \hypersetup{
@@ -21,17 +22,13 @@
 \section{Analysis}
 \subsection{Problem statement}
 To form the perfect grouping for a group project within a school, many factors need to be taken into 
-consideration to prevent students from feeling incapable of completing the project due to the group 
-having a poor distribution of skills or the group not being able to get along and communicate properly 
-to get the work done. These factors include relations between students, skills of the students, skills 
-required by the project, number of students in the group.
+consideration to prevent students from feeling incapable of completing the project. These factors include skills of the students, skills 
+required by the project, and number of students in the group.   
 
 This project aims to create a tool to aid teachers in ensuring the students are separated into groups 
 where the students are best able to get along and combine their individual skills to achieve their 
 project’s aims. The user can input data about student relations and skills, data about the projects' 
-skill requirements and group sizes and the program will execute a matching algorithm that outputs an 
-optimal set of groups in the form of a table on a GUI to present the results in a readable way and 
-an option to export the data as a CSV.
+skill requirements and group sizes and the program will output an optimal set of groups in the form of a table on a GUI to present the results in a readable way and an option to export the data as a CSV.
 
 This program will not find, assume, or generate information about the students or project, it will 
 only work with the data inputted to assign a group of students to a project.
@@ -81,23 +78,6 @@ interest in with people they do not get along with.
     in each group.
 \end{enumerate}
 
-\subsubsection{GUI library}
-\begin{figure}[b]
-    \centering
-    \includegraphics[width=0.5\linewidth]{Figures/fileDialog.png}
-    \caption{Tkinter's file dialog, configured to only show .txt and .csv files}
-    \label{fig:tkfiles}
-\end{figure}
-Between the two main python GUI libraries, pygame and Tkinter, I chose Tkinter because of the 
-larger library of classes of pre-made, customisable widgets that can be used more easily to produce 
-a simple, easy-to-use tool, such as a dialog that allows users to graphically navigate through their 
-files to find their data file [Fig.\ref{fig:tkfiles}]. On the other hand, with my prior experience 
-with pygame, I have found it to be more suited towards building games and graphically-complex tools, 
-which is not what I am aiming for in this project. I am aiming to have a GUI that is quick and simple 
-to create and edit, and has user-friendly features for inputting, editing, and reading data. I also 
-have more experience with Tkinter, which will reduce the amount of time I spend on the GUI and allow 
-me to focus on developing and improving the grouping algorithm. 
-
 \subsubsection{Algorithm}
 I have researched into representing students and projects into bipartite graphs, and then using 
 matching algorithms such as the alternate path algorithm to join students to projects. However, this 
@@ -119,20 +99,47 @@ number of times.
 Also simulated annealing. maybe.
 
 \subsubsection{Group A skills}
-Databases, data structures, file handling, OOP
+data structures, OOP
+
+\subsubsection{Inputting data}
+For the inputting of data, I have decided that it can be inputted through txt and csv files (excel files??), through databases, manually  on the GUI, or any combination of those methods. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. My third party...
+
 \subsubsection{Accounts}
-I have decided against 
-\subsubsection{Data storage}
-I have researched into whether information about projects and students should be stored somewhere, and if so, how. I have concluded that 
-they should be stored in relational databases that are accessible and modifiable using parametrised SQL. 
+I have decided against implementing an account system because I don't think it will provide any value to the program. Accounts are
+typically used for ensuring data can only be accessed by the users with the correct permissions. As this program will be designed to
+be run locally, all the data will be stored and only accessible on the machine the program was run on, so the OS can handle user security.
+\begin{comment}
+Another reason for accounts is allow users to access their data that has been stored by a third party, especially within a cloud to allow
+for data to be quickly transferred between devices. I will implement a manual solution to this by allowing users to export and import all
+the data the program stores and the user can handle that data transfer manually. 
+\end{comment}
 
-I chose to store the data because 
-being able to make minor changes to the data and then re-running the program quickly is a very valuable feature that could save users' time 
-and energy as they would not have to go through the entire process of entering every piece of data just for small changes to some of the 
-data. This feature is present in keamk's grouping tool, and I found it very useful in my testing.
+\subsubsection{Internal data storage}
+I chose to store the data about the students and projects in their own classes, that can be accessed from within a VYfivbeivuVBI
 
-I chose databases to store the data because I have more experience working with relational databases and SQL then any other form of data 
-storage, such as in files. The data is structured so databases would allow for efficient access and modification of specific entries.
+\subsubsection{External data storage}
+I have researched into whether information about projects and students should be stored somewhere, and if so, how. I have concluded that they should be stored in relational databases that are accessible and modifiable using parametrised SQL. 
+
+I chose to store the data because being able to make minor changes to the data and then re-running the program quickly is a very valuable feature that could save users' time and energy as they would not have to go through the entire process of entering every piece of data just for small changes to some of the data. This feature is present in keamk's grouping tool, and I found it very useful in my testing.
+
+I chose databases to store the data because I have more experience working with relational databases and SQL then any other form of data storage, such as in files. The data is structured so databases would allow for efficient access and modification of specific entries.
+
+\subsubsection{GUI library}
+\begin{figure}[b]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Figures/fileDialog.png}
+    \caption{Tkinter's file dialog, configured to only show .txt and .csv files}
+    \label{fig:tkfiles}
+\end{figure}
+Between the two main python GUI libraries, pygame and Tkinter, I chose Tkinter because of the 
+larger library of classes of pre-made, customisable widgets that can be used more easily to produce 
+a simple, easy-to-use tool, such as a dialog that allows users to graphically navigate through their 
+files to find their data file [Fig.\ref{fig:tkfiles}]. On the other hand, with my prior experience 
+with pygame, I have found it to be more suited towards building games and graphically-complex tools, 
+which is not what I am aiming for in this project. I am aiming to have a GUI that is quick and simple 
+to create and edit, and has user-friendly features for inputting, editing, and reading data. I also 
+have more experience with Tkinter, which will reduce the amount of time I spend on the GUI and allow 
+me to focus on developing and improving the grouping algorithm. 
 
 
 \subsection{Dialogue}
@@ -164,5 +171,9 @@ which projects are a part of that run.
     \item (outputting the data)
 \end{enumerate}
 \subsection{Modelling}
-
+\begin{figure}[hb]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Figures/classAnalysis.png}
+    \caption{Class diagram showing relationship between the classes within the program and their attributes}
+\end{figure}
 \end{document}
