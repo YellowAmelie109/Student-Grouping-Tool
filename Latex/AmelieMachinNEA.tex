@@ -96,13 +96,9 @@ project. The solutions with lower fitness scores are discarded and the higher on
 form new solutions. Some of these solutions then have random mutations, which involve swapping of 
 students between projects. New fitness scores are calculated and the process repeats a predetermined 
 number of times.
-Also simulated annealing. maybe.
-
-\subsubsection{Group A skills}
-data structures, OOP
 
 \subsubsection{Inputting data}
-For the inputting of data, I have decided that it can be inputted through txt and csv files (excel files??), through databases, manually  on the GUI, or any combination of those methods. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. My third party...
+For the inputting of data, I have decided that it can be inputted through txt and csv files, through databases, manually  on the GUI, or any combination of those methods. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. I will also include the option to import the data from an Excel spreadsheet at the request of my third party.
 
 \subsubsection{Accounts}
 I have decided against implementing an account system because I don't think it will provide any value to the program. Accounts are
@@ -115,17 +111,18 @@ the data the program stores and the user can handle that data transfer manually.
 \end{comment}
 
 \subsubsection{Internal data storage}
-I chose to store the data about the students and projects in their own classes, that can be accessed from within a VYfivbeivuVBI
+I chose to store the data about the students and projects in their own classes, that are aggregated within an 'individual' class. The student and project classes contain their names, skills and the project will have the recommended group size. The individual will contain a project object, student objects, and current fitness score as well as methods for calculating fitness scores, crossover with other individuals, and mutations.
+This keeps the attributes and methods stored together in the program to make the code easier to read and understand by a programmer.
 
 \subsubsection{External data storage}
-I have researched into whether information about projects and students should be stored somewhere, and if so, how. I have concluded that they should be stored in relational databases that are accessible and modifiable using parametrised SQL. 
+I have researched into whether information about projects and students should be stored somewhere, and if so, how. I have concluded that they should be stored in relational databases that are accessible and modifiable by entering the details into the graphical interface, which are passed as parameters into SQL statements. These can then be loaded as a list of checkboxes that can be selected and deselected by the user for that run.
 
 I chose to store the data because being able to make minor changes to the data and then re-running the program quickly is a very valuable feature that could save users' time and energy as they would not have to go through the entire process of entering every piece of data just for small changes to some of the data. This feature is present in keamk's grouping tool, and I found it very useful in my testing.
 
 I chose databases to store the data because I have more experience working with relational databases and SQL then any other form of data storage, such as in files. The data is structured so databases would allow for efficient access and modification of specific entries.
 
 \subsubsection{GUI library}
-\begin{figure}[b]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\linewidth]{Figures/fileDialog.png}
     \caption{Tkinter's file dialog, configured to only show .txt and .csv files}
@@ -147,29 +144,33 @@ My third party is Dr Ed Horncastle, the lead teacher for the Exeter Mathematics 
 my school, which is where groups of 3 or 4 students work together on research projects set by 
 University academics or companies. He is suitable because he has to make these groups based on the 
 skills of the students and match them to projects every year, so he has a thorough understanding of 
-how this tool could work and would benefit from using this tool. I asked him the following questions:
+how this tool could work and would benefit from using this tool. I interviewed him and asked him the following questions:
 \begin{enumerate}
-    \item What is the current process for creating EMC groups?
+    \item What is the current process for creating EMC groups? 
+        \begin{itemize} \item All the metrics to consider are gathered into a spreadsheet and then groups are formed by hand. \end{itemize}
+    \item What are these metrics?
+        \begin{itemize} \item Students' own choice \item There must be a mix of genders \item The projects must be relevant to the A-level studies of that student. Someone who does not take computer science shouldn't be given a computer science based project\item Those that work hard and those that laze off more easily should be mixed together. If this is their first project, this is inferred from GCSE results, otherwise it is based off the results of previous projects. \item Special educational needs \item Timetabling restrictions \item Students do not get put into groups with others they have worked on projects with before \end{itemize}
+    \item How are the student choices measured?
+        \begin{itemize} \item For some of the projects, the students give their top 3 choices of projects. Starting with the least popular project, the groups are formed by trying to minimise the sum of the positions the student's ranked the project in. \end{itemize}
     \item How is the data about the students and projects currently stored?
-    \item What other metrics are taken into consideration when deciding groups, other than student 
-    relations and project skill requirements?
-    \item q(How to input the data?)
-    \item How would you prefer to input a project's skill requirements? For example, just noting 
-    that a skill would be involved, or a numerical scoring system of how necessary that skill is.
-    \item How would you prefer to input a student's skill set?
-    \item Would it be worthwhile to factor in student relations into my algorithm?
-    \item If so, how would be best to input this data? For example, a list of students that 
-    should/should not be grouped together.
+        \begin{itemize} \item Excel spreadsheet \end{itemize}
+    \item How would you prefer to input the data?
+        \begin{itemize} \item Student choices from a Microsoft Form and all other data from a Excel spreadsheet \end{itemize}
+    \item How much data and in what format do you think the data should be outputted?
+        \begin{itemize} \item In tables with the project name, student names and summaries of information about each group such as gender ratio, how many take computer science or physics, and how many have special education needs. \item As a simplified register in alphabetical order \end{itemize}
+    \item How useful would storing project/student details locally, that can be loaded when needed, be for you?
+            \begin{itemize} \item Very \end{itemize}
     \item Are there any other features that would be useful for this tool to include?
+        \begin{itemize} \item Some extra features that could be added is timetabling for what order the projects are presented in, and itinerary for group trips out of school. \end{itemize}
 \end{enumerate}
+
 \subsection{Objectives}
-The projects should be saved to a database that can be edited graphically and check boxes to select 
-which projects are a part of that run.
 \begin{enumerate}
     \item (Entering the data)
     \item (processing the data)
     \item (outputting the data)
 \end{enumerate}
+
 \subsection{Modelling}
 \begin{figure}[hb]
     \centering
