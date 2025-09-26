@@ -21,42 +21,31 @@
 
 \section{Analysis}
 \subsection{Problem statement}
-To form the perfect grouping for a group project within a school, many factors need to be taken into 
-consideration to prevent students from feeling incapable of completing the project. These factors include skills of the students, skills 
-required by the project, and number of students in the group.   
+To form the perfect grouping for a group project within a school, many factors need to be taken into consideration to prevent students from feeling incapable of completing the project. These factors include, but are not limited to, skills of the students, skills required by the project, and number of students in the group.
 
-This project aims to create a tool to aid teachers in ensuring the students are separated into groups 
-where the students are best able to get along and combine their individual skills to achieve their 
-project’s aims. The user can input data about student relations and skills, data about the projects' 
-skill requirements and group sizes and the program will output an optimal set of groups in the form of a table on a GUI to present the results in a readable way and an option to export the data as a CSV.
+This project aims to create a tool to aid teachers in ensuring the students are separated into groups where the students are best able to get along and combine their individual skills to achieve their project's aims. The user can input the data that they want to be taken into consideration by the program and it will output a set of groups. This is in the form of a table on a GUI - to present the results in a readable way - and an option to export the data.
 
-This program will not find, assume, or generate information about the students or project, it will 
-only work with the data inputted to assign a group of students to a project.
+This program will not find, assume, or generate information about the students or project, it will only work with the data inputted to assign a group of students to a project.
 
-Students will also benefit from this tool as they would be able to apply their skills to a project 
-in a group of people they can enjoy time with, rather than being stuck on a project they have no 
-interest in with people they do not get along with.
+Students will also benefit from this tool as they would be able to apply their skills to a project in a group of people they can enjoy time with, rather than being stuck on a project they have no interest in with people they do not get along with.
 
 \subsection{Research}
 
 \subsubsection{Sources of inspiration}
 \begin{enumerate}
-    \item\href{https://www.classtools.net/random-group-generator/}{Random group generator from ClassTools.net}:
+    \item Random group generator from ClassTools.net \href{https://www.classtools.net/random-group-generator/}{https://www.classtools.net/\newline random-group-generator/}
     \begin{figure}[hb]
         \centering
         \includegraphics[width=0.5\linewidth]{Figures/classtools.png}
         \caption{ClassTools's random group generator tool with inputs and outputs visible on the same page}
     \end{figure}
-    This tool is used frequently by my teachers to create random groups for group activities. The GUI 
-    is very simple to use as there is little data that needs to be entered, so can all fit down the 
-    left of the screen. The output is very easy to read as each group is visually separated using 
-    both coloured boxes and numbering. However, this tool is too simple because it lacks any way to 
-    group with conditions, which is part of my scope, as they are purely randomised. This means that 
-    teams could quit often be unfairly balanced in terms of skill, or group students together that 
-    are known to not work well together. The teacher's only option to solve this is to re-roll until 
-    the output is suitable enough for the task manually. This gave me the idea for the algorithm to 
-    be the simulation of this re-rolling and selection of optimal outputs.
-    \item\href{https://www.keamk.com/random-team-generator}{keamk}:
+    \begin{itemize} 
+        \item This tool is used frequently by my teachers to create random groups for group activities. 
+        \item The GUI is very simple to use as there is little data that needs to be entered, so can all fit down the left of the screen. 
+        \item The output is very easy to read as each group is visually separated using both coloured boxes and numbering. [Obj. 3b]
+        \item However, this tool is too simple because it lacks any way to group with conditions, which is part of my scope, as they are purely randomised. This means that teams could quit often be unfairly balanced in terms of skill, or group students together that are known to not work well together. The teacher's only option to solve this is to re-roll until the output is suitable enough for the task manually. This gave me the idea for the algorithm to be the simulation of this re-rolling and selection of optimal outputs.
+    \end{itemize}
+    \item keamk \href{https://www.keamk.com/random-team-generator}{https://www.keamk.com/random-team-generator}
     \begin{figure}[ht]
         \centering
         \includegraphics[width=0.5\linewidth]{Figures/keamkInput.png}
@@ -67,28 +56,19 @@ interest in with people they do not get along with.
         \includegraphics[width=0.5\linewidth]{Figures/keamkOutput.png}
         \caption{Keamk's outputs}
     \end{figure}
-    This tool creates groups that all have a balanced level of skill. I like how the skill level is 
-    inputted as a rating between 1-5 as this is intuitive for the user. I also like the extra details 
-    that are outputted, such as how many are in each group next to the group name and the skill levels 
-    next to each individual. Furthermore, the option to go back, make small changes to the data inputted and get new groupings 
-    was very quick and useful.
-    However, this tool can only create balanced groups, not groups with 
-    different objectives as is in my scope, and there is no way to assign a certain number of 
-    participants to each group, as the program puts the same number (or one away) of participants 
-    in each group.
+    \begin{itemize}
+    \item This tool creates groups that all have a balanced level of skill. 
+    \item I like how the skill level is inputted as a rating between 1-5 as this is intuitive for the user. 
+    \item I also like the extra details that are outputted, such as how many are in each group next to the group name and the skill levels next to each individual. [Obj. 3a]
+    \item Furthermore, the option to go back to make small changes to the data inputted and get new groupings was very quick and useful. [Obj. 1g]
+    \item However, this tool can only create balanced groups, not groups with different objectives as is in my scope, and there is no way to assign a certain number of participants to each group, as the program puts the same number (or one away) of participants in each group. [Obj. 2c-d]
+    \end{itemize}
 \end{enumerate}
 
 \subsubsection{Algorithm}
-I have researched into representing students and projects into bipartite graphs, and then using 
-matching algorithms such as the alternate path algorithm to join students to projects. However, this 
-will only match one student to one project, not groups so is not suitable. I then researched applying 
-the algorithm repeatedly to graphs with randomised students, but this means that some students will 
-never be joined into a group purely based on chance and that the groups formed are such that each 
-individual is best for the project, not that the overall group is best suited for the project, so 
-teamwork will not as high as it could be. I then researched using a grouping algorithm, such as 
-\href{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-Formation-Algorithm-Explainer}{explained here} 
-to create similar groups then using bipartite matching algorithms to match them. However this only 
-creates groups with similar skill sets, not skill sets that very based on the project.
+I have researched into representing students and projects into bipartite graphs, and then using matching algorithms such as the alternate path algorithm to join students to projects. However, this will only match one student to one project, not groups so is not suitable. I then researched applying the algorithm repeatedly to graphs with randomised students, but this means that some students will never be joined into a group purely based on chance and that the groups formed are such that each individual is best for the project, not that the overall group is best suited for the project, so teamwork will not as good as it could be. I then researched using a grouping algorithm, such as 
+\href{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-Formation-Algorithm-Explainer}{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-\newline Formation-Algorithm-Explainer} 
+to create similar groups then using bipartite matching algorithms to match them. However this only creates groups with similar skill sets, not skill sets that very based on the project.
 \newline
 I am currently looking into a genetic algorithm where each individual is made up of a possible 
 solution and the fitness score is a calculation between how suited each group is to the assigned 
@@ -98,7 +78,7 @@ students between projects. New fitness scores are calculated and the process rep
 number of times.
 
 \subsubsection{Inputting data}
-For the inputting of data, I have decided that it can be inputted through txt and csv files, through databases, manually  on the GUI, or any combination of those methods. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. I will also include the option to import the data from an Excel spreadsheet at the request of my third party.
+For the inputting of data, I have decided that it can be inputted through txt and csv files [Obj. 1a], manually  on the GUI [Obj. 1b], or any combination of those methods [Obj. 1c]. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. I will also include the option to import the data from an Excel spreadsheet at the request of my third party [Obj. 1b].
 
 \subsubsection{Accounts}
 I have decided against implementing an account system because I don't think it will provide any value to the program. Accounts are
@@ -111,11 +91,12 @@ the data the program stores and the user can handle that data transfer manually.
 \end{comment}
 
 \subsubsection{Internal data storage}
-I chose to store the data about the students and projects in their own classes, that are aggregated within an 'individual' class. The student and project classes contain their names, skills and the project will have the recommended group size. The individual will contain a project object, student objects, and current fitness score as well as methods for calculating fitness scores, crossover with other individuals, and mutations.
+I chose to store the data about the students and projects in their own classes, that are aggregated within an 'individual' class. The student and project classes contain their names, skills and the project will have the recommended group size. The individual will contain a project object, student objects, and current fitness score as well as methods for calculating fitness scores, crossover with other individuals, and mutations. [Fig. \ref{fig:classAnalysis}]
+
 This keeps the attributes and methods stored together in the program to make the code easier to read and understand by a programmer.
 
 \subsubsection{External data storage}
-I have researched into whether information about projects and students should be stored somewhere, and if so, how. I have concluded that they should be stored in relational databases that are accessible and modifiable by entering the details into the graphical interface, which are passed as parameters into SQL statements. These can then be loaded as a list of checkboxes that can be selected and deselected by the user for that run.
+[Obj. 4] I have researched into whether information about projects and students should be stored somewhere, and if so, how. I have concluded that they should be stored in relational databases that are accessible and modifiable by entering the details into the graphical interface, which are passed as parameters into SQL statements. These can then be loaded as a list of checkboxes that can be selected and deselected by the user for that run. [Obj. 1c]
 
 I chose to store the data because being able to make minor changes to the data and then re-running the program quickly is a very valuable feature that could save users' time and energy as they would not have to go through the entire process of entering every piece of data just for small changes to some of the data. This feature is present in keamk's grouping tool, and I found it very useful in my testing.
 
@@ -128,15 +109,9 @@ I chose databases to store the data because I have more experience working with 
     \caption{Tkinter's file dialog, configured to only show .txt and .csv files}
     \label{fig:tkfiles}
 \end{figure}
-Between the two main python GUI libraries, pygame and Tkinter, I chose Tkinter because of the 
-larger library of classes of pre-made, customisable widgets that can be used more easily to produce 
-a simple, easy-to-use tool, such as a dialog that allows users to graphically navigate through their 
-files to find their data file [Fig.\ref{fig:tkfiles}]. On the other hand, with my prior experience 
-with pygame, I have found it to be more suited towards building games and graphically-complex tools, 
-which is not what I am aiming for in this project. I am aiming to have a GUI that is quick and simple 
-to create and edit, and has user-friendly features for inputting, editing, and reading data. I also 
-have more experience with Tkinter, which will reduce the amount of time I spend on the GUI and allow 
-me to focus on developing and improving the grouping algorithm. 
+Between the two main python GUI libraries, pygame and Tkinter, I chose Tkinter because of the larger library of classes of pre-made, customisable widgets that can be used more easily to produce a simple, easy-to-use tool, such as a dialog that allows users to graphically navigate through their files to find their data file [Fig.\ref{fig:tkfiles}]. 
+
+On the other hand, with my prior experience with pygame, I have found it to be more suited towards building games and graphically-complex tools, which is not what I am aiming for in this project. I am aiming to have a GUI that is quick and simple to create and edit, and has user-friendly features for inputting, editing, and reading data. I also have more experience with Tkinter, which will reduce the amount of time I spend on the GUI and allow me to focus on developing and improving the grouping algorithm and user experience.
 
 
 \subsection{Dialogue}
@@ -147,7 +122,7 @@ skills of the students and match them to projects every year, so he has a thorou
 how this tool could work and would benefit from using this tool. I interviewed him and asked him the following questions:
 \begin{enumerate}
     \item What is the current process for creating EMC groups? 
-        \begin{itemize} \item All the metrics to consider are gathered into a spreadsheet and then groups are formed by hand. \end{itemize}
+        \begin{itemize} \item All the metrics to consider are gathered into a spreadsheet and then groups are formed by hand. \item Some projects don't end up getting groups assigned, especially those that have been set by a company that already has another project with an assigned group.\end{itemize}
     \item What are these metrics?
         \begin{itemize} \item Students' own choice \item There must be a mix of genders \item The projects must be relevant to the A-level studies of that student. Someone who does not take computer science shouldn't be given a computer science based project\item Those that work hard and those that laze off more easily should be mixed together. If this is their first project, this is inferred from GCSE results, otherwise it is based off the results of previous projects. \item Special educational needs \item Timetabling restrictions \item Students do not get put into groups with others they have worked on projects with before \end{itemize}
     \item How are the student choices measured?
@@ -164,11 +139,45 @@ how this tool could work and would benefit from using this tool. I interviewed h
         \begin{itemize} \item Some extra features that could be added is timetabling for what order the projects are presented in, and itinerary for group trips out of school. \end{itemize}
 \end{enumerate}
 
+After this, I decided to include Excel spreadsheets as an input method [Obj. 1b],\dots
+
+I decided not to\dots
 \subsection{Objectives}
 \begin{enumerate}
-    \item (Entering the data)
-    \item (processing the data)
-    \item (outputting the data)
+    \item Data can be entered into the program from external sources
+        \begin{enumerate} 
+            \item Data can be entered manually into the GUI
+            \item Data can be entered through txt, csv, and Excel spreadsheet files
+            \item Data can be loaded from stores from previous uses of the program
+            \item Data can be entered through a combination of other methods
+            \item Student data contains a name, gender\dots
+            \begin{enumerate}
+                \item Name can only contain alphanumeric characters and certain \newline whitelisted characters
+            \end{enumerate}
+            \item Project data contains a name, maximum group size, minimum group size\dots
+            \begin{enumerate}
+                \item Name can only contain alphanumeric characters and certain \newline whitelisted characters
+                \item Maximum group size must be greater than 0
+                \item Minimum group size must be greater than or equal to 0
+            \end{enumerate}
+            \item Data can be added, edited, and removed at any time during the program's runtime
+        \end{enumerate}
+    \item Students must be grouped together and to a project
+        \begin{enumerate}
+            \item All students are in a group
+            \item All students have at least one skill that will allow them to contribute to the project, when possible
+            \item Projects must not have more students assigned to it than the maximum limit inputted by the user
+            \item Projects must not have less students assigned to it than the minimum limit inputted by the user
+            \item If student choices are taken into account, the student must be \newline matched to one of the projects that they selected.
+            \item Groups must have a mix of genders
+        \end{enumerate}
+    \item The resulting groups can be viewed
+        \begin{enumerate}
+            \item This can be through tables displayed on the GUI that contain the project name, student names, number of students, gender ratio, skill range\dots
+            \item This can be through a register that displays projects in alphabetical order, grouped with its students in alphabetical order and no other information.
+            \item Both above options are automatically saved as \dots files in the local file directory.
+        \end{enumerate}
+    \item Users have the option to store project and student data
 \end{enumerate}
 
 \subsection{Modelling}
@@ -176,5 +185,6 @@ how this tool could work and would benefit from using this tool. I interviewed h
     \centering
     \includegraphics[width=0.7\linewidth]{Figures/classAnalysis.png}
     \caption{Class diagram showing relationship between the classes within the program and their attributes}
+    \label{fig:classAnalysis}
 \end{figure}
 \end{document}
