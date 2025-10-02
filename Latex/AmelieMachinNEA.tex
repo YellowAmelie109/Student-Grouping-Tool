@@ -33,11 +33,12 @@ Students will also benefit from this tool as they would be able to apply their s
 
 \subsubsection{Sources of inspiration}
 \begin{enumerate}
-    \item Random group generator from ClassTools.net \href{https://www.classtools.net/random-group-generator/}{https://www.classtools.net/\newline random-group-generator/}
+    \item Random group generator from ClassTools.net [Fig. \ref{fig:classtools}] \newline \href{https://www.classtools.net/random-group-generator/}{https://www.classtools.net/random-group-generator/}
     \begin{figure}[hb]
         \centering
-        \includegraphics[width=0.5\linewidth]{Figures/classtools.png}
+        \includegraphics[width=0.75\linewidth]{Figures/classtools.png}
         \caption{ClassTools's random group generator tool with inputs and outputs visible on the same page}
+        \label{fig:classtools}
     \end{figure}
     \begin{itemize} 
         \item This tool is used frequently by my teachers to create random groups for group activities. 
@@ -45,16 +46,19 @@ Students will also benefit from this tool as they would be able to apply their s
         \item The output is very easy to read as each group is visually separated using both coloured boxes and numbering. [Obj. 3b]
         \item However, this tool is too simple because it lacks any way to group with conditions, which is part of my scope, as they are purely randomised. This means that teams could quit often be unfairly balanced in terms of skill, or group students together that are known to not work well together. The teacher's only option to solve this is to re-roll until the output is suitable enough for the task manually. This gave me the idea for the algorithm to be the simulation of this re-rolling and selection of optimal outputs.
     \end{itemize}
-    \item keamk \href{https://www.keamk.com/random-team-generator}{https://www.keamk.com/random-team-generator}
+    \item keamk [Fig. \ref{fig:keamkIn}] [Fig. \ref{fig:keamkOut}] \newline
+    \href{https://www.keamk.com/random-team-generator}{https://www.keamk.com/random-team-generator}
     \begin{figure}[ht]
         \centering
-        \includegraphics[width=0.5\linewidth]{Figures/keamkInput.png}
+        \includegraphics[width=0.75\linewidth]{Figures/keamkInput.png}
         \caption{Keamk's menu for inputting data}
+        \label{fig:keamkIn}
     \end{figure}
     \begin{figure}[ht]
         \centering
-        \includegraphics[width=0.5\linewidth]{Figures/keamkOutput.png}
+        \includegraphics[width=0.75\linewidth]{Figures/keamkOutput.png}
         \caption{Keamk's outputs}
+        \label{fig:keamkOut}
     \end{figure}
     \begin{itemize}
     \item This tool creates groups that all have a balanced level of skill. 
@@ -65,8 +69,16 @@ Students will also benefit from this tool as they would be able to apply their s
     \end{itemize}
 \end{enumerate}
 
+\noindent These tools influenced me to reduce the complexity of my GUI, and gave me ideas such as to keep groups visually separate using colour as well as tables, adding the option to go back and edit the inputted data later, and some summary statistics to include with the outputs.
+
 \subsubsection{Algorithm}
-I have researched into representing students and projects into bipartite graphs, and then using matching algorithms such as the alternate path algorithm to join students to projects. However, this will only match one student to one project, not groups so is not suitable. I then researched applying the algorithm repeatedly to graphs with randomised students, but this means that some students will never be joined into a group purely based on chance and that the groups formed are such that each individual is best for the project, not that the overall group is best suited for the project, so teamwork will not as good as it could be. I then researched using a grouping algorithm, such as 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{Figures/bipartite1.png}
+    \caption{A bipartite graph with 3 student nodes on the left, 2 project nodes and the right, and some edges between them. A matching algorithm has been applied, with the matching highlighted in yellow. This has not met the scope because a student has not been matched.}
+    \label{fig:bipartite1}
+\end{figure}
+I have researched into representing students and projects into bipartite graphs, and then using matching algorithms such as the alternate path algorithm to join students to projects [Fig. \ref{fig:bipartite1}]. However, this will only match one student to one project, not groups so is not suitable. I then researched applying the algorithm repeatedly to graphs with randomised students, but this means that some students will never be joined into a group purely based on chance and that the groups formed are such that each individual is best for the project, not that the overall group is best suited for the project, so teamwork will not as good as it could be. I then researched using a grouping algorithm, such as 
 \href{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-Formation-Algorithm-Explainer}{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-\newline Formation-Algorithm-Explainer} 
 to create similar groups then using bipartite matching algorithms to match them. However this only creates groups with similar skill sets, not skill sets that very based on the project.
 \newline
@@ -75,7 +87,7 @@ solution and the fitness score is a calculation between how suited each group is
 project. The solutions with lower fitness scores are discarded and the higher ones crossover to 
 form new solutions. Some of these solutions then have random mutations, which involve swapping of 
 students between projects. New fitness scores are calculated and the process repeats a predetermined 
-number of times.
+number of times.[Fig. \ref{fig:geneticFlowAnalysis}]
 
 \subsubsection{Inputting data}
 For the inputting of data, I have decided that it can be inputted through txt and csv files [Obj. 1a], manually  on the GUI [Obj. 1b], or any combination of those methods [Obj. 1c]. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. I will also include the option to import the data from an Excel spreadsheet at the request of my third party [Obj. 1b].
@@ -105,11 +117,11 @@ I chose databases to store the data because I have more experience working with 
 \subsubsection{GUI library}
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\linewidth]{Figures/fileDialog.png}
+    \includegraphics[width=0.75\linewidth]{Figures/fileDialog.png}
     \caption{Tkinter's file dialog, configured to only show .txt and .csv files}
     \label{fig:tkfiles}
 \end{figure}
-Between the two main python GUI libraries, pygame and Tkinter, I chose Tkinter because of the larger library of classes of pre-made, customisable widgets that can be used more easily to produce a simple, easy-to-use tool, such as a dialog that allows users to graphically navigate through their files to find their data file [Fig.\ref{fig:tkfiles}]. 
+\noindent Between the two main python GUI libraries, pygame and Tkinter, I chose Tkinter because of the larger library of classes of pre-made, customisable widgets that can be used more easily to produce a simple, easy-to-use tool, such as a dialog that allows users to graphically navigate through their files to find their data file [Fig.\ref{fig:tkfiles}]. 
 
 On the other hand, with my prior experience with pygame, I have found it to be more suited towards building games and graphically-complex tools, which is not what I am aiming for in this project. I am aiming to have a GUI that is quick and simple to create and edit, and has user-friendly features for inputting, editing, and reading data. I also have more experience with Tkinter, which will reduce the amount of time I spend on the GUI and allow me to focus on developing and improving the grouping algorithm and user experience.
 
@@ -173,7 +185,7 @@ I decided not to\dots
         \end{enumerate}
     \item The resulting groups can be viewed
         \begin{enumerate}
-            \item This can be through tables displayed on the GUI that contain the project name, student names, number of students, gender ratio, skill range\dots
+            \item This can be through coloured tables displayed on the GUI that contain the project name, student names, number of students, gender ratio, skill range\dots
             \item This can be through a register that displays projects in alphabetical order, grouped with its students in alphabetical order and no other information.
             \item Both above options are automatically saved as \dots files in the local file directory.
         \end{enumerate}
@@ -181,10 +193,22 @@ I decided not to\dots
 \end{enumerate}
 
 \subsection{Modelling}
-\begin{figure}[hb]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.7\linewidth]{Figures/classAnalysis.png}
-    \caption{Class diagram showing relationship between the classes within the program and their attributes}
+    \caption{Class diagram showing relationships between the classes and their attributes used during the genetic algorithm's runtime}
     \label{fig:classAnalysis}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/frameClassAnalysis.png}
+    \caption{Class diagram showing relationships between the classes that form the GUI}
+    \label{fig:frameClassAnalysis}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.89\linewidth]{Figures/geneticFlowAnalysis.png}
+    \caption{Flowchart showing the process for the genetic algorithm}
+    \label{fig:geneticFlowAnalysis}
 \end{figure}
 \end{document}
