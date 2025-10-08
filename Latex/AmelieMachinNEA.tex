@@ -162,22 +162,23 @@ I decided not to\dots
             \item Data can be entered through txt, csv, and Excel spreadsheet files
             \item Data can be loaded from stores from previous uses of the program
             \item Data can be entered through a combination of other methods
-            \item Student data contains a name, gender\dots
+            \item Student data must contain a name, gender\dots
             \begin{enumerate}
-                \item Name can only contain alphanumeric characters and certain \newline whitelisted characters
+                \item Name must only contain alphanumeric characters and certain \newline whitelisted characters
             \end{enumerate}
-            \item Project data contains a name, maximum group size, minimum group size\dots
+            \item Project data must contain a name, maximum group size, minimum group size\dots
             \begin{enumerate}
-                \item Name can only contain alphanumeric characters and certain \newline whitelisted characters
+                \item Name must only contain alphanumeric characters and certain \newline whitelisted characters
                 \item Maximum group size must be greater than 0
                 \item Minimum group size must be greater than or equal to 0
             \end{enumerate}
             \item Data can be added, edited, and removed at any time during the program's runtime
+            \item Data must be entered before the algorithm is run
         \end{enumerate}
     \item Students must be grouped together and to a project
         \begin{enumerate}
-            \item All students are in a group
-            \item All students have at least one skill that will allow them to contribute to the project, when possible
+            \item All students must be put into a group
+            \item All students must have at least one skill that will allow them to contribute to the project, when possible
             \item Projects must not have more students assigned to it than the maximum limit inputted by the user
             \item Projects must not have less students assigned to it than the minimum limit inputted by the user
             \item If student choices are taken into account, the student must be \newline matched to one of the projects that they selected.
@@ -186,17 +187,17 @@ I decided not to\dots
     \item The resulting groups can be viewed
         \begin{enumerate}
             \item This can be through coloured tables displayed on the GUI that contain the project name, student names, number of students, gender ratio, skill range\dots
-            \item This can be through a register that displays projects in alphabetical order, grouped with its students in alphabetical order and no other information.
-            \item Both above options are automatically saved as \dots files in the local file directory.
+            \item This can be through a register that displays projects in alphabetical order, grouped with its students in alphabetical order, all coloured to separate from each other, and no other information.
+            \item Both above options must automatically be saved as \dots files in the local file directory.
         \end{enumerate}
-    \item Users have the option to store project and student data
+    \item All data about projects and students must be stored
 \end{enumerate}
 
 \subsection{Modelling}
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=0.7\linewidth]{Figures/classAnalysis.png}
-    \caption{Class diagram showing relationships between the classes and their attributes used during the genetic algorithm's runtime}
+    \includegraphics[width=1\linewidth]{Figures/geneticClassAnalysis.png}
+    \caption{Class diagram showing relationships between the classes and their attributes used by the genetic algorithm.}
     \label{fig:classAnalysis}
 \end{figure}
 \begin{figure}
@@ -210,5 +211,54 @@ I decided not to\dots
     \includegraphics[width=0.89\linewidth]{Figures/geneticFlowAnalysis.png}
     \caption{Flowchart showing the process for the genetic algorithm}
     \label{fig:geneticFlowAnalysis}
+\end{figure}
+
+\clearpage
+
+\section{Design}
+
+\subsection{GUI}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/pageNaviDesign.png}
+    \caption{Page navigation diagram showing which pages can navigate to each other. Note: The student and project pages can only navigate to the previous page.}
+    \label{fig:pageNaviDesign}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/homeUIDesign.png}
+    \caption{Sketch of the homepage layout that is the first page seen upon opening the app. The "Choose Projects" and "Choose Students" lead to the projects and students pages, respectively. The "Create Groups" button leads to the loading page and runs the grouping algorithm with the students and projects the user has selected. It is greyed out and not clickable unless at least one project and student has been selected [Obj. 1h].}
+    \label{fig:homeUIDesign}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/projectUIDesign.png}
+    \caption{Sketch of the project page layout. The projects in the scrollable list are all those that are currently stored in the database [Obj. 1c]. There are options to import project data from supported files [Obj. 1b] and to manually enter project details at the top [Obj. 1a], which then get added to the database [Obj. 4] and the visual list [Obj. 1d]. The project details can also be edited or deleted from the database by pressing the buttons [Obj. 1g], which run parametrised SQL. Each project in the list features a checkbox, allowing users to select which of the projects in the database will be used in the grouping algorithm. Projects not selected will not have groups matched to them. This page also features a back button to go back to the home page.}
+    \label{fig:projectUIDesign}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/studentUIDesign.png}
+    \caption{Sketch of the student page layout. The students in the scrollable list are all those that are currently stored in the database [Obj. 1c]. There are options to import student data from supported files [Obj. 1b] and to manually enter student details at the top [Obj. 1a], which then get added to the database [Obj. 4] and the visual list [Obj. 1d]. The student details can also be edited or deleted from the database by pressing the buttons [Obj. 1g], which run parametrised SQL. Each student in the list features a checkbox, allowing users to select which of the students in the database will be used in the grouping algorithm. Students not selected will not be put into groups. This page also features a back button to go back to the home page.}
+    \label{fig:studentUIDesign}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/loadingUIDesign.png}
+    \caption{Sketch of the loading page layout. This page features a loading animation, and three buttons. The "View/edit Students" and "View/edit Projects" buttons lead to the Students and Projects pages, respectively [Obj. 1g]. The "Cancel" button ends the algorithm and leads to the home page. Once the algorithm has finished successfully, it moves onto the results page.}
+    \label{fig:loadingUIDesign}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/resultsUIDesign.png}
+    \caption{Sketch of the results page layout. It features a scrollable list of all the projects with the students grouped to it and summary statistics about the group, such as group size, gender ratio, and skills [Obj. 3a]. The "Switch view" leads to the register page and the home button leads to the home page.}
+    \label{fig:resultsUIDesign}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/registerUIDesign.png}
+    \caption{Sketch of the register page layout. }
 \end{figure}
 \end{document}
