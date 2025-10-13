@@ -72,22 +72,18 @@ Students will also benefit from this tool as they would be able to apply their s
 \noindent These tools influenced me to reduce the complexity of my GUI, and gave me ideas such as to keep groups visually separate using colour as well as tables, adding the option to go back and edit the inputted data later, and some summary statistics to include with the outputs.
 
 \subsubsection{Algorithm}
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.5\linewidth]{Figures/bipartite1.png}
     \caption{A bipartite graph with 3 student nodes on the left, 2 project nodes and the right, and some edges between them. A matching algorithm has been applied, with the matching highlighted in yellow. This has not met the scope because a student has not been matched.}
     \label{fig:bipartite1}
 \end{figure}
-I have researched into representing students and projects into bipartite graphs, and then using matching algorithms such as the alternate path algorithm to join students to projects [Fig. \ref{fig:bipartite1}]. However, this will only match one student to one project, not groups so is not suitable. I then researched applying the algorithm repeatedly to graphs with randomised students, but this means that some students will never be joined into a group purely based on chance and that the groups formed are such that each individual is best for the project, not that the overall group is best suited for the project, so teamwork will not as good as it could be. I then researched using a grouping algorithm, such as 
+\noindent I have researched into representing students and projects into bipartite graphs, and then using matching algorithms such as the alternate path algorithm to join students to projects [Fig. \ref{fig:bipartite1}]. However, this will only match one student to one project, not groups so is not suitable. I then researched applying the algorithm repeatedly to graphs with randomised students, but this means that some students will never be joined into a group purely based on chance and that the groups formed are such that each individual is best for the project, not that the overall group is best suited for the project, so teamwork will not as good as it could be. I then researched using a grouping algorithm, such as 
 \href{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-Formation-Algorithm-Explainer}{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-\newline Formation-Algorithm-Explainer} 
-to create similar groups then using bipartite matching algorithms to match them. However this only creates groups with similar skill sets, not skill sets that very based on the project.
-\newline
-I am currently looking into a genetic algorithm where each individual is made up of a possible 
-solution and the fitness score is a calculation between how suited each group is to the assigned 
-project. The solutions with lower fitness scores are discarded and the higher ones crossover to 
-form new solutions. Some of these solutions then have random mutations, which involve swapping of 
-students between projects. New fitness scores are calculated and the process repeats a predetermined 
-number of times.[Fig. \ref{fig:geneticFlowAnalysis}]
+to create similar groups then using bipartite matching algorithms to match them. However this only creates groups with similar skill sets, not skill sets that vary based on the project.
+
+
+I decided on a genetic algorithm where each individual is made up of a possible solution and the fitness score is a calculation between how suited each group is to the assigned project. The solutions with lower fitness scores are discarded and the higher ones crossover to form new solutions. Some of these solutions then have random mutations, which involve swapping of students between projects. New fitness scores are calculated and the process repeats a predetermined number of times [Fig. \ref{fig:geneticFlowAnalysis}]. I chose this because genetic algorithms are very adaptable to varying conditions and constraints, such as the ones that the user chooses in this program. This will allow the program to test different combinations of projects and students, test different group sizes for a project, and swap in and out optional projects to find better and better solutions until it reaches a high-quality solution that fits all the user's needs. This fits the project scope far better than all previously researched algorithms.
 
 \subsubsection{Inputting data}
 For the inputting of data, I have decided that it can be inputted through txt and csv files [Obj. 1a], manually  on the GUI [Obj. 1b], or any combination of those methods [Obj. 1c]. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. I will also include the option to import the data from an Excel spreadsheet at the request of my third party [Obj. 1b].
@@ -151,9 +147,9 @@ how this tool could work and would benefit from using this tool. I interviewed h
         \begin{itemize} \item Some extra features that could be added is timetabling for what order the projects are presented in, and itinerary for group trips out of school. \end{itemize}
 \end{enumerate}
 
-After this, I decided to include Excel spreadsheets as an input method [Obj. 1b],\dots
+After this, I decided to include Excel spreadsheets as an input method [Obj. 1b], include options for projects to not have groups assigned despite being a part of the algorithm [Obj. 1f], take genders into account [Obj. 2e], have summary statistics presented alongside the groups [Obj. 3a], have the option to view the groups without any extra information [Obj. 3b], store the data locally for re-use at another time [Obj. 4].
 
-I decided not to\dots
+I decided not to include student choice, student personality, special education needs, timetabling restrictions, or preventing grouping the same students together across multiple as adding too many restrictions to the algorithm will make it take it longer to run to create a set of groups that best matches all of these restrictions. These are the restrictions that were lower on Dr Horncastle's priorities. I will also not include timetabling or scheduling as these deviate quite far from my project's scope.
 \subsection{Objectives}
 \begin{enumerate}
     \item Data can be entered into the program from external sources
@@ -162,11 +158,11 @@ I decided not to\dots
             \item Data can be entered through txt, csv, and Excel spreadsheet files
             \item Data can be loaded from stores from previous uses of the program
             \item Data can be entered through a combination of other methods
-            \item Student data must contain a name, gender\dots
+            \item Student data must contain a name, gender, and skills
             \begin{enumerate}
                 \item Name must only contain alphanumeric characters and certain \newline whitelisted characters
             \end{enumerate}
-            \item Project data must contain a name, maximum group size, minimum group size\dots
+            \item Project data must contain a name, maximum group size, minimum group size, whether or not the project must have a group or not, and skill requirements
             \begin{enumerate}
                 \item Name must only contain alphanumeric characters and certain \newline whitelisted characters
                 \item Maximum group size must be greater than 0
@@ -181,12 +177,11 @@ I decided not to\dots
             \item All students must have at least one skill that will allow them to contribute to the project, when possible
             \item Projects must not have more students assigned to it than the maximum limit inputted by the user
             \item Projects must not have less students assigned to it than the minimum limit inputted by the user
-            \item If student choices are taken into account, the student must be \newline matched to one of the projects that they selected.
             \item Groups must have a mix of genders
         \end{enumerate}
     \item The resulting groups can be viewed
         \begin{enumerate}
-            \item This can be through coloured tables displayed on the GUI that contain the project name, student names, number of students, gender ratio, skill range\dots
+            \item This can be through coloured tables displayed on the GUI that contain the project name, student names, number of students, gender ratio, and skill range
             \item This can be through a register that displays projects in alphabetical order, grouped with its students in alphabetical order, all coloured to separate from each other, and no other information.
             \item Both above options must automatically be saved as \dots files in the local file directory.
         \end{enumerate}
@@ -260,5 +255,24 @@ I decided not to\dots
     \centering
     \includegraphics[width=1\linewidth]{Figures/registerUIDesign.png}
     \caption{Sketch of the register page layout. }
+\end{figure}
+
+\clearpage
+
+\subsection{Databases}
+\begin{comment}
+Add underlines for the keys
+Diagram??
+\end{comment}
+\begin{itemize}
+\item Students(\underline{StudentID}, FirstName, LastName, Gender)
+\item StudentSkills(\underline{StudentID}, \underline{Skill})
+\item Projects(\underline{ProjectID}, Name, MaxSize, MinSize, Optional)
+\item ProjectSkills(\underline{ProjectID}, \underline{Skill})
+\end{itemize}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Figures/databaseDesign.png}
+    \caption{}
 \end{figure}
 \end{document}
