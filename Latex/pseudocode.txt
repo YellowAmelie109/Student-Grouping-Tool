@@ -1,0 +1,71 @@
+TARGET_FITNESS = integer
+MAX_ITERATIONS = integer
+POPULATION_SIZE = integer
+
+
+students = set of 'student' objects 
+projects = set of 'project' objects 
+
+
+#Ensure there aren't too many or too few students to meet requirements
+minStudents = 0
+maxStudents = 0
+
+REPEAT for all projects:
+    maxStudents += project.maxSize
+    IF (not project.optional):
+        minStudents += project.minSize
+
+#Check for too few students
+IF (length of students < minStudents): 
+    DisplayError("Error: Only {length of students} to fill a minimum of {minStudents} places.")
+    HomePage()
+
+#Check for too many students
+ELSE IF (length of students > maxStudents): #Checks for too many
+    DisplayError("{length of students} is too many to fit in {maxStudents} places.")
+    HomePage()
+
+
+#Generate initial grouping sets and average fitness scores
+population = list
+REPEAT for i = 0 to POPULATION_SIZE - 1: 
+    groups = GenInitialGroups(projects, students)
+    avgFit = (SUM fitness of each group)/(length of groups)
+    APPEND groups,avgFit to population
+
+SORT population by avgFit
+
+#Genetic algorithm
+REPEAT for i = 1 to MAX_ITERATIONS:
+    #Ends early when one set of groupings is good enough
+    IF (highest avgFit > TARGET_FITNESS):
+        BREAK
+
+    #Eliminate the worst half of grouping sets
+    population = first (POPULATION_SIZE FLOORDIV 2) of population
+    new_pop = []
+
+    #Create next population
+    REPEAT for j = 1 to 90% of POPULATION_SIZE:
+        #Crossover random groupings
+        groups = Mate(random group from population, random group from population) 
+
+        #Ensure all students appear once
+        valid = verifyGroupings(groups)
+        IF (not valid):
+            fixGroupings(groups)
+
+        #Random mutations to prevent convergence towards a local best solution
+        Mutate(groups)
+
+        #Find the average fitness score for each new grouping
+        avgFit = (SUM fitness of each group)/(length of groups)
+        APPEND groups,avgFit to new_pop
+
+    #Combine the crossover with 10% elitism
+    population = new_pop + top 10% of population
+    SORT population by avgFit
+        
+
+return group with highest avgFit

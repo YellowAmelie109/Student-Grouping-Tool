@@ -1,6 +1,11 @@
 \documentclass{article}
 \usepackage{comment}
 \usepackage{graphicx}
+\usepackage{listings}
+\lstdefinestyle{pseudocode}{
+    breaklines=true,
+    postbreak=\mbox{\small{$\hookrightarrow$}\space}
+}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks,
@@ -273,6 +278,16 @@ Diagram??
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.75\linewidth]{Figures/databaseDesign.png}
-    \caption{}
+    \caption{An entity relationship diagram showing the one-to-many relationships between the Students and Projects entities and the store of their skills to ensure all fields are atomic so the database is normalised.}
+\end{figure}
+\subsection{Algorithm}
+\subsubsection{Pseudocode}
+Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings.
+\lstset{style=pseudocode}
+\lstinputlisting{pseudocode.txt}
+\subsubsection{Diagrams}
+\begin{figure}[h]
+    \centering
+    \caption{NOT FINISHED A class diagram showing the attributes and methods of the classes used by the genetic algorithm, and the relationships between each class.}
 \end{figure}
 \end{document}
