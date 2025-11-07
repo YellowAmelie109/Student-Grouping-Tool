@@ -1,11 +1,15 @@
 \documentclass{article}
 \usepackage{comment}
 \usepackage{graphicx}
+\usepackage{etoc}
 \usepackage{listings}
-\lstdefinestyle{pseudocode}{
+\lstdefinestyle{code}{
     breaklines=true,
-    postbreak=\mbox{\small{$\hookrightarrow$}\space}
+    postbreak=\mbox{\small{$\hookrightarrow$}\space},
+    frame=single,
+    numbers=left
 }
+\lstset{style=code}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks,
@@ -32,7 +36,9 @@ This project aims to create a tool to aid teachers in ensuring the students are 
 
 This program will not find, assume, or generate information about the students or project, it will only work with the data inputted to assign a group of students to a project.
 
-Students will also benefit from this tool as they would be able to apply their skills to a project in a group of people they can enjoy time with, rather than being stuck on a project they have no interest in with people they do not get along with.
+Teachers will benefit from this tool as they don't have to spend as much time or effort creating groups for the projects they set for their students, so they can spend their time and effort on helping and teaching the students instead. Also, when the students are working on their projects, they are more likely to be focused on their work, so require less oversight from the teacher.
+
+Students will also benefit from this tool as they would be able to apply their skills to a project in a group of people they can enjoy time with, rather than being stuck on a project they have no interest in with people they do not get along with. This means they are more likely to enjoy their time at school, be able to get more work done, and therefore be able to learn more, as opposed to being unmotivated and distracted in a poorly made group.
 
 \subsection{Research}
 
@@ -53,7 +59,7 @@ Students will also benefit from this tool as they would be able to apply their s
     \end{itemize}
     \item keamk [Fig. \ref{fig:keamkIn}] [Fig. \ref{fig:keamkOut}] \newline
     \href{https://www.keamk.com/random-team-generator}{https://www.keamk.com/random-team-generator}
-    \begin{figure}[ht]
+    \begin{figure}[hb]
         \centering
         \includegraphics[width=0.75\linewidth]{Figures/keamkInput.png}
         \caption{Keamk's menu for inputting data}
@@ -77,7 +83,7 @@ Students will also benefit from this tool as they would be able to apply their s
 \noindent These tools influenced me to reduce the complexity of my GUI, and gave me ideas such as to keep groups visually separate using colour as well as tables, adding the option to go back and edit the inputted data later, and some summary statistics to include with the outputs.
 
 \subsubsection{Algorithm}
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\linewidth]{Figures/bipartite1.png}
     \caption{A bipartite graph with 3 student nodes on the left, 2 project nodes and the right, and some edges between them. A matching algorithm has been applied, with the matching highlighted in yellow. This has not met the scope because a student has not been matched.}
@@ -87,21 +93,22 @@ Students will also benefit from this tool as they would be able to apply their s
 \href{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-Formation-Algorithm-Explainer}{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-\newline Formation-Algorithm-Explainer} 
 to create similar groups then using bipartite matching algorithms to match them. However this only creates groups with similar skill sets, not skill sets that vary based on the project.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/populationSketchAnalysis}
+    \caption{A sketch showing an example of a population, representing a set of possible solutions (individuals). Each individual represents a possible set of groups, and has a fitness score that represents how well every project's group matches the project's and user's requirements. This is calculated by averaging all the fitness scores of the groups it contains.}
+    \label{fig:populationSketchAnalysis}
+\end{figure}
 
-I decided on a genetic algorithm where each individual is made up of a possible solution and the fitness score is a calculation between how suited each group is to the assigned project. The solutions with lower fitness scores are discarded and the higher ones crossover to form new solutions. Some of these solutions then have random mutations, which involve swapping of students between projects. New fitness scores are calculated and the process repeats a predetermined number of times [Fig. \ref{fig:geneticFlowAnalysis}]. I chose this because genetic algorithms are very adaptable to varying conditions and constraints, such as the ones that the user chooses in this program. This will allow the program to test different combinations of projects and students, test different group sizes for a project, and swap in and out optional projects to find better and better solutions until it reaches a high-quality solution that fits all the user's needs. This fits the project scope far better than all previously researched algorithms.
+I decided on a genetic algorithm where each individual is made up of a possible solution and the fitness score is an average between how suited each group is to its assigned project [Fig. \ref{fig:populationSketchAnalysis}]. The individuals with higher fitness scores are discarded and the lower ones are randomly selected to crossover to form new individuals. Some of these individuals formed may contain error such as the same student multiple times, or a missing student, so that must be corrected before continuing. Then, random mutations are applied to some individuals, which may involve swapping of students between groups, moving some students to an optional project, or moving some students to group that isn't full. New fitness scores are calculated and the process repeats a predetermined number of times [Fig. \ref{fig:geneticFlowAnalysis}]. I chose this because genetic algorithms are very adaptable to varying conditions and constraints, such as the ones that the user chooses in this program. This will allow the program to test different combinations of projects and students, test different group sizes for a project, and swap in and out optional projects to find better and better solutions until it reaches a high-quality solution that fits all the user's needs. This fits the project scope far better than all previously researched algorithms.
 
 \subsubsection{Inputting data}
 For the inputting of data, I have decided that it can be inputted through txt and csv files [Obj. 1a], manually  on the GUI [Obj. 1b], or any combination of those methods [Obj. 1c]. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. I will also include the option to import the data from an Excel spreadsheet at the request of my third party [Obj. 1b].
 
 \subsubsection{Accounts}
-I have decided against implementing an account system because I don't think it will provide any value to the program. Accounts are
-typically used for ensuring data can only be accessed by the users with the correct permissions. As this program will be designed to
-be run locally, all the data will be stored and only accessible on the machine the program was run on, so the OS can handle user security.
-\begin{comment}
-Another reason for accounts is allow users to access their data that has been stored by a third party, especially within a cloud to allow
-for data to be quickly transferred between devices. I will implement a manual solution to this by allowing users to export and import all
-the data the program stores and the user can handle that data transfer manually. 
-\end{comment}
+I have decided against implementing an account system because I don't think it will provide any value to the program. Accounts are typically used for ensuring data can only be accessed by the users with the correct permissions. As this program will be designed to be run locally, all the data will be stored and only accessible on the machine the program was run on, so the OS can handle user security.
+
+Another reason for accounts is allow users to access their data that has been stored by a third party, especially within a cloud to allow for data to be quickly transferred between devices. I will implement a manual solution to this by allowing users to export and import all the data the program stores and the user can handle that data transfer themselves.
 
 \subsubsection{Internal data storage}
 I chose to store the data about the students and projects in their own classes, that are aggregated within an 'individual' class. The student and project classes contain their names, skills and the project will have the recommended group size. The individual will contain a project object, student objects, and current fitness score as well as methods for calculating fitness scores, crossover with other individuals, and mutations. [Fig. \ref{fig:classAnalysis}]
@@ -193,10 +200,12 @@ I decided not to include student choice, student personality, special education 
     \item All data about projects and students must be stored
 \end{enumerate}
 
+\clearpage
+
 \subsection{Modelling}
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=1\linewidth]{Figures/geneticClassAnalysis.png}
+    \includegraphics[width=0.9\linewidth]{Figures/geneticClassAnalysis.png}
     \caption{Class diagram showing relationships between the classes and their attributes used by the genetic algorithm.}
     \label{fig:classAnalysis}
 \end{figure}
@@ -219,7 +228,7 @@ I decided not to include student choice, student personality, special education 
 
 \subsection{GUI}
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=1\linewidth]{Figures/pageNaviDesign.png}
     \caption{Page navigation diagram showing which pages can navigate to each other. Note: The student and project pages can only navigate to the previous page.}
@@ -282,12 +291,75 @@ Diagram??
 \end{figure}
 \subsection{Algorithm}
 \subsubsection{Pseudocode}
-Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings.
-\lstset{style=pseudocode}
-\lstinputlisting{pseudocode.txt}
+\lstinputlisting[label={pseudo:geneticAlgo},caption={Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings.}]{pseudocode.txt}
+
+\subsubsection{Fitness algorithm}
+Still working on it.
+
 \subsubsection{Diagrams}
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \caption{NOT FINISHED A class diagram showing the attributes and methods of the classes used by the genetic algorithm, and the relationships between each class.}
+    \includegraphics[width=0.7\linewidth]{Figures/geneticClassDesign.png}
+    \caption{A class diagram showing the attributes and methods of the classes used by the genetic algorithm, and the relationships between each class.}
+    \label{fig:geneticClassDesign}
 \end{figure}
+
+\clearpage
+
+\section{Technical solution}
+\localtableofcontents
+\vspace{5mm}
+\noindent main.py is the main file that is run by the user. It contains the GUI, and calls to the functions and classes in the other files when needed. All the pages outlined above [Fig. \ref{fig:pageNaviDesign}] have their own classes, whose objects are stored in the window class. The page classes' attributes are mostly widgets, both tkinter widgets and custom widgets (such as Header, ScrollableFrame, SelectionBox, and ProjectBox), or the attributes store the result of user interaction, such as the state of the checkboxes on the project page. The methods all code for the processing and outputting the result of human interaction with the GUI.
+
+
+\vspace{5mm}\noindent
+algoClasses.py contains the Individual, Student, and Project classes for use by the genetic algorithm. These follow the design of the above class diagram [Fig. \ref{fig:geneticClassDesign}].They are stored in a separate file for re-use across multiple files.
+
+\vspace{5mm}\noindent
+geneticAlgo.py contains the code for genetic algorithm that calculates the groups. it follows the design of the above pseudocode [Listing \ref{pseudo:geneticAlgo}]
+
+\subsection{main.py}
+\lstinputlisting[language=python]{../Code/main.py}
+
+\subsection{algoClasses.py}
+\lstinputlisting[language=python]{../Code/algoClasses.py}
+
+\subsection{geneticAlgo.py}
+\lstinputlisting[language=python]{../Code/geneticAlgo.py}
+
+
+\section{Testing}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/homePageTesting.png}
+    \caption{The home page}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/projectPage1Testing.png}
+    \caption{The project page}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/projectPage2Testing.png}
+    \caption{The project page, scrolled down}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/studentPageTesting.png}
+    \caption{The student page}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/loadingPageTesting.png}
+    \caption{The loading page}
+\end{figure}
+
+\clearpage
+\section{Evaluation}
+So far, I have created a basic GUI with minimal formatting, and some basic functionality such as page navigation, scrollable frames, and project management on the project page. 
+
+I have also created the classes required by the genetic algorithm and made a start coding up my pseudocode for the genetic algorithm.
+
+The fitness algorithm is harder to design than I thought it would be. I got a bit carried away working on the GUI and didn't spend as much time as I needed on the fitness algorithm so I haven't got one yet. I also didn't add much to the design section because of this, so I will add more diagrams to the design section before the next submission.
 \end{document}

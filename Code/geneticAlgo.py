@@ -1,7 +1,7 @@
 from algoClasses import Project,Student,Individual
 import sqlite3 as sql
 
-def getStudents(database,IDs):
+def get_students(database,IDs):
     students=[]
 
     with sql.connect(database) as conn:
@@ -10,7 +10,7 @@ def getStudents(database,IDs):
             
             for ID in IDs:
                 #Get each students' skills
-                cur.execute("SELECT Skill FROM StudentSKills WHERE StudentID = ?",(ID))
+                cur.execute("SELECT Skill FROM StudentSkills WHERE StudentID = ?",(ID))
                 skills=cur.fetchall()
 
                 #Get each students' name and gender
@@ -23,7 +23,7 @@ def getStudents(database,IDs):
     return students
 
 
-def getProjects(database,IDs):
+def get_projects(database,IDs):
     projects=[]
 
     with sql.connect(database) as conn:
@@ -46,7 +46,7 @@ def getProjects(database,IDs):
 
 
 def run(database, studentIDs, projectIDs, target_fitness, max_iterations, population_size):
-    students=getStudents(database,studentIDs)
-    projects=getProjects(database,projectIDs)
+    students=get_students(database,studentIDs)
+    projects=get_projects(database,projectIDs)
 
     #Ensure there aren't too many or too few students to meet requirements
