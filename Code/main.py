@@ -16,9 +16,8 @@ class Window(tk.Tk):
     def __init__(self):
         #Setup window
         tk.Tk.__init__(self)
-        #self.geometry("1100x700")
-        #self.attributes("-fullscreen", True)
-        self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}")
+        self.state('zoomed')
+        self.geometry(f"{self.winfo_screenwidth()-10}x{self.winfo_screenheight()}")
         self.title('Student Grouping Tool')
         self.config(background=BG_COLOUR)
 
@@ -70,7 +69,7 @@ class HomePage(tk.Frame):
         tk.Frame.tkraise(self)
 
         #If at least one student and one project has been selected, allow the run button to be clickable and remove the warning message
-        if True:
+        if ProjectPage in self.master.frames and StudentPage in self.master.frames and self.master.frames[ProjectPage].check_for_selection() and self.master.frames[StudentPage].check_for_selection():
             self.runButton["state"]="enabled"
             self.warning.pack_forget()
 
@@ -101,6 +100,7 @@ class ProjectPage(tk.Frame):
 
         self.boxesFrame=ScrollableFrame(self)
         self.boxesFrame.canvas.pack(fill="both",expand=True)
+        self.update()
 
         self.projectBoxes={}
         for i in range(10):
@@ -108,7 +108,18 @@ class ProjectPage(tk.Frame):
             self.projectBoxes[name]=projectBox(self.boxesFrame,self,name,0,0,True,["g"])
             self.projectBoxes[name].pack(fill="x",padx=10,pady=5)
 
-    
+    #Method override as a work-around for a scrolling bug
+    def update(self):
+        self.master.state('normal')
+        tk.Frame.update(self)
+        self.master.state('zoomed')
+
+    #Iterates through every project, and returns true if it finds a selected project. Returns false when no project is selected.
+    def check_for_selection(self):
+        for box in self.projectBoxes:
+            if self.projectBoxes[box].check_selection():
+                return True
+        return False    
 
     def import_projects(self):
         #Show an "Open" dialog box and return an open file object in read mode
@@ -123,12 +134,53 @@ class ProjectPage(tk.Frame):
         return
         
     def new_project(self):
-        popupWin=tk.Toplevel(self.master)
+        
+        popupWin=entryPopupWin(self,"New project")
         name=tk.StringVar()
-        maxSize=tk.IntVar()
-        minSize=tk.IntVar()
+        maxSize=tk.StringVar()
+        minSize=tk.StringVar()
         optional=tk.BooleanVar()
-        #skills=
+        skills=tk.StringVar()
+
+        popupWin.add_string_entry("Enter name:",name)
+
+        popupWin.add_int_entry("Enter the maximum size allowed for this project's group:",maxSize)
+
+        popupWin.add_int_entry("Enter the minimum size allowed for this project's group:",minSize)
+
+        popupWin.add_checkbox("Is this project optional?",optional)
+
+        popupWin.add_string_entry("Enter skills, each one separated by a comma:",skills)
+
+        popupWin.add_save_cancel(popupWin,name,maxSize,minSize,optional,skills)
+
+    def save_entry(self,window,*variables):
+        name=variables[0].get()
+        maxSize=variables[1].get()
+        minSize=variables[2].get()
+        optional=variables[3].get()
+        skills=variables[4].get()
+
+        #Validation to ensure all required entries are filled
+        if name != "" and maxSize != "" and minSize != "" and skills != "":
+            
+            maxSize = int(maxSize)
+            minSize = int(minSize)
+            
+            #Separate skills into a list and remove whitespace
+            skills=skills.split(",")
+            for i in range(len(skills)):
+                skills[i]=skills[i].strip()
+
+            #Display new project on the GUI
+            self.projectBoxes[name]=projectBox(self.boxesFrame,self,name,maxSize,minSize,optional,skills)
+            self.projectBoxes[name].pack(fill="x",padx=10,pady=5)
+
+            #Destroy the popup window
+            window.destroy()
+
+            #Work-around for a scrollbar bug
+            self.update()
 
     def editBox(self,boxName):
         return
@@ -136,6 +188,7 @@ class ProjectPage(tk.Frame):
     def deleteBox(self,boxName):
         self.projectBoxes[boxName].pack_forget()
         del self.projectBoxes[boxName]
+        self.update()
 
 
 
@@ -149,6 +202,91 @@ class StudentPage(tk.Frame):
 
         self.backButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage)) #Change to check where it should go back to
         self.backButton.pack(side="right")
+
+        self.importButton=ttk.Button(self,text="Import from file",command=self.import_students)
+        self.importButton.pack()
+
+        self.addButton=ttk.Button(self,text="New student",command=self.new_student)
+        self.addButton.pack()
+
+        self.boxesFrame=ScrollableFrame(self)
+        self.boxesFrame.canvas.pack(fill="both",expand=True)
+        self.update()
+
+        self.studentBoxes={}
+        for i in range(10):
+            name="Name"+str(i)
+            self.studentBoxes[name]=studentBox(self.boxesFrame,self,name,"F",["G"])
+            self.studentBoxes[name].pack(fill="x",padx=10,pady=5)
+
+    #Method override as a work-around for a scrolling bug
+    def update(self):
+        self.master.state('normal')
+        tk.Frame.update(self)
+        self.master.state('zoomed')
+
+    def check_for_selection(self):
+        for box in self.studentBoxes:
+            if self.studentBoxes[box].check_selection():
+                return True
+        return False  
+    
+    def import_students(self):
+        #Show an "Open" dialog box and return an open file object in read mode
+        file = filedialog.askopenfile(mode='r',filetypes=[("Supported file types",".txt .csv")]) #Add excel
+        #Validation to ensure the user selected a file
+        if file == None:
+            return
+        
+        #<<<---------------------------------------------
+
+        file.close()
+        return
+        
+    def new_student(self):
+        popupWin=entryPopupWin(self,"New student")
+        name=tk.StringVar()
+        gender=tk.StringVar()
+        skills=tk.StringVar()
+
+        popupWin.add_string_entry("Enter name:", name)
+
+        popupWin.add_string_entry("Enter gender:",gender)
+
+        popupWin.add_string_entry("Enter skills, each one separated by a comma:",skills)
+
+        popupWin.add_save_cancel(popupWin,name,gender,skills)
+    
+    def save_entry(self,window,*variables):
+        name=variables[0].get()
+        gender=variables[1].get()
+        skills=variables[2].get()
+
+        #Validation to ensure all required entries are filled
+        if name != "" and gender != "" and skills != "":
+
+            #Separate skills into a list and remove whitespace
+            skills=skills.split(",")
+            for i in range(len(skills)):
+                skills[i]=skills[i].strip()
+
+            #Display new student on the GUI
+            self.studentBoxes[name]=studentBox(self.boxesFrame,self,name,gender,skills)
+            self.studentBoxes[name].pack(fill="x",padx=10,pady=5)
+
+            #Destroy the popup window
+            window.destroy()
+
+            #Scroll bar bug work-around
+            self.update()
+
+    def editBox(self,boxName):
+        return
+    
+    def deleteBox(self,boxName):
+        self.studentBoxes[boxName].pack_forget()
+        del self.studentBoxes[boxName]
+        self.update()
 
 
 class LoadingPage(tk.Frame):
@@ -218,7 +356,8 @@ class selectionBox(tk.Frame):
         self.name=name
         self.page=page
 
-        self.checkbox=ttk.Checkbutton(self)
+        self.selected=tk.BooleanVar(value=False)
+        self.checkbox=ttk.Checkbutton(self,variable=self.selected,name=name.lower(),onvalue=True,offvalue=False)
         self.checkbox.pack()
 
         self.nameLabel=ttk.Label(self,text=name)
@@ -230,12 +369,16 @@ class selectionBox(tk.Frame):
         self.deleteButton=ttk.Button(self,text="Delete",command=self.delete)
         self.deleteButton.pack()
 
+    def check_selection(self):
+        return self.selected.get()
+
     def edit(self):
         self.page.editBox(self.name)
     
     def delete(self):
         delChoice=messagebox.askyesno(title="Delete entry", message=f"Are you sure you want to delete {self.name}?")
         if delChoice:
+            self.selected.set(False)
             self.page.deleteBox(self.name)
         
 
@@ -254,6 +397,47 @@ class projectBox(selectionBox):
 
         self.skills=ttk.Label(self,text=f"Skills: {", ".join(skills)}")
         self.skills.pack()
+
+class studentBox(selectionBox):
+    def __init__(self, parent, page, name, gender, skills):
+        selectionBox.__init__(self,parent,page,name)
+
+        self.gender = ttk.Label(self,text=f"Gender: {gender}")
+        self.gender.pack()
+
+        self.skills = ttk.Label(self, text= f"Skills: {", ".join(skills)}")
+        self.skills.pack()
+
+
+class entryPopupWin(tk.Toplevel):
+    def __init__(self,parent,title):
+        tk.Toplevel.__init__(self,parent)
+        self.title(title)
+    
+    def add_string_entry(self,text,variable):
+        ttk.Label(self, text=text).pack()
+        ttk.Entry(self, textvariable=variable).pack()
+
+    def add_int_entry(self,text,variable):
+
+        #Prevents user from typing non numbers into number-only entry boxes
+        def intCallback(P):
+            return str.isdigit(P) or P == ""
+        
+        intValidate = (self.register(intCallback), '%P')
+        
+        ttk.Label(self, text=text).pack()
+        ttk.Entry(self, textvariable=variable,validate="all",validatecommand=intValidate).pack()
+    
+    def add_checkbox(self,text,variable):
+        ttk.Label(self, text=text).pack()
+        ttk.Checkbutton(self, variable=variable, onvalue=True, offvalue=False).pack()
+    
+    def add_save_cancel(self,window,*variables):
+        ttk.Button(self, text="Save", command=lambda:self.master.save_entry(window,*variables)).pack()
+        ttk.Button(self, text="Cancel", command=self.destroy).pack()
+
+    
 
 #=====MAIN=====
 

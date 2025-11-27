@@ -1,11 +1,36 @@
 {
     "cSpell.words": [
+        "aboveskip",
+        "basicstyle",
+        "belowskip",
+        "breakatwhitespace",
+        "breaklines",
+        "captionpos",
         "dialog",
         "FLOORDIV",
+        "fullflexible",
         "keamk",
         "Keamk's",
+        "keepspaces",
+        "keywordstyle",
+        "numbersep",
+        "numberstyle",
+        "postbreak",
         "pygame",
+        "rulecolor",
+        "showspaces",
+        "showstringspaces",
+        "showtabs",
+        "stringstyle",
+        "tabsize",
+        "taublue",
+        "taucodecomment",
+        "taucodekey",
+        "taucodestring",
+        "taugray",
         "Tkinter",
-        "Tkinter's"
+        "Tkinter's",
+        "xleftmargin",
+        "xrightmargin"
     ]
 }
