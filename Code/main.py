@@ -7,7 +7,7 @@ from tkinter import messagebox
 
 BG_COLOUR="#FFFFFF"
 HEADER_COLOUR="#FFDB32"
-LARGE_FONT=("Ariel",30)
+LARGE_FONT=("Arial",30)
 
 #=====ROOT WINDOW=====
 #Constants for styling included within

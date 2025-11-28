@@ -2,6 +2,8 @@
 \usepackage{comment}
 \usepackage{graphicx}
 \usepackage{etoc}
+\usepackage{longtable}
+\usepackage{array}
 \usepackage{xcolor}
 \usepackage{listings}
 \definecolor{taucodeback}{RGB}{248, 248, 248}  
@@ -339,6 +341,49 @@ Diagram??
     \includegraphics[width=0.75\linewidth]{Figures/databaseDesign.png}
     \caption{An entity relationship diagram showing the one-to-many relationships between the Students and Projects entities and the store of their skills to ensure all fields are atomic so the database is normalised.}
 \end{figure}
+
+\subsection{Inputs and outputs}
+\begin{longtable}[c]{|m{0.25\linewidth}|m{0.25\linewidth}|m{0.25\linewidth}|m{0.25\linewidth}|}
+    \caption{An IPSO chart showing what data is inputted, how it is processed and stored, and how the results are outputted.} \label{tab:IPSO} \\
+    \hline
+    Input&Process&Storage&Output\\
+    \hline
+    Project details:\newline
+    - Name\newline
+    - Max group size\newline
+    - Min group size\newline
+    - Optional\newline
+    - Skill requirements
+    &Validate input&Projects and ProjectSkills tables in database&Display on GUI [Fig. \ref{fig:projectUIDesign}]\\
+    \hline
+    Student details:\newline
+    - Name \newline
+    - Gender \newline
+    - Skills
+    &Validate input&Student and StudentSkills tables in database&Display on GUI [Fig. \ref{fig:studentUIDesign}]\\
+    \hline
+    Settings:\newline
+    - Directory to store and load database\newline
+    - Target fitness for genetic algorithm\newline
+    - Max iterations for genetic algorithm\newline
+    - Size of populations for genetic algorithm
+    &Validate input&JSON file&NA\\
+    \hline
+    "Create Groups" button on homepage pressed&Run genetic algorithm[List. \ref{pseudo:geneticAlgo}]&Classes for Student, Project, and Individual [Fig. \ref{fig:classAnalysis}]&Scrollable list of projects and groups [Fig. \ref{fig:resultsUIDesign}]\\
+    \hline
+
+\end{longtable}
+\begin{longtable}[c]{|m{0.33\linewidth}|m{0.33\linewidth}|m{0.33\linewidth}|}
+    \caption{Validations and restrictions on data entry} \label{tab:dataEntry} \\
+    \hline
+    Data&Data Type&Validation and Restrictions\\
+    \hline
+    \multicolumn{3}{|c|}{Projects}\\
+    \hline
+    Name&String&- Required\\
+    \hline
+
+\end{longtable}
 \subsection{Algorithm}
 \subsubsection{Pseudocode}
 \lstinputlisting[label={pseudo:geneticAlgo},caption={Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings.}]{pseudocode.txt}
