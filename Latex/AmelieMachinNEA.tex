@@ -326,19 +326,17 @@ I decided not to include student choice, student personality, special education 
 \clearpage
 
 \subsection{Databases}
-\begin{comment}
-Add underlines for the keys
-Diagram??
-\end{comment}
 \begin{itemize}
 \item Students(\underline{StudentID}, Name, Gender)
 \item StudentSkills(\underline{StudentID}, \underline{Skill})
 \item Projects(\underline{ProjectID}, Name, MaxSize, MinSize, Optional)
 \item ProjectSkills(\underline{ProjectID}, \underline{Skill})
+\item Results(\underline{ResultID}, ProjectID, LocalTimeGenerated, EpochTimeGenerated)
+\item ResultStudentLink(\underline{ResultID}, \underline{StudentID})
 \end{itemize}
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.75\linewidth]{Figures/databaseDesign.png}
+    \includegraphics[width=1\linewidth]{Figures/databaseDesign.png}
     \caption{An entity relationship diagram showing the one-to-many relationships between the Students and Projects entities and the store of their skills to ensure all fields are atomic so the database is normalised.}
 \end{figure}
 
@@ -373,7 +371,7 @@ Diagram??
     \hline
 
 \end{longtable}
-\begin{longtable}[c]{|m{0.33\linewidth}|m{0.33\linewidth}|m{0.33\linewidth}|}
+\begin{longtable}[c]{|m{0.3333\linewidth}|m{0.3333\linewidth}|m{0.3333\linewidth}|}
     \caption{Validations and restrictions on data entry} \label{tab:dataEntry} \\
     \hline
     Data&Data Type&Validation and Restrictions\\
@@ -381,6 +379,32 @@ Diagram??
     \multicolumn{3}{|c|}{Projects}\\
     \hline
     Name&String&- Required\\
+    \hline
+    Max group size&Integer&- Required\newline- Positive integers only\\
+    \hline
+    Min group size&Integer&- Required\newline- Positive integers only\newline- Must be less than or equal to 'Max group size'\\
+    \hline
+    Optional&Boolean&- Lack of entry is equivalent to entry of false\\
+    \hline
+    Skill requirements&String&- Entries separated by commas\\
+    \hline
+    \multicolumn{3}{|c|}{Students}\\
+    \hline
+    Name&String&- Required\\
+    \hline
+    Gender&String&\\
+    \hline
+    Skills&String&- Entries separated by commas\\
+    \hline
+    \multicolumn{3}{|c|}{Settings}\\
+    \hline
+    Directory to store and load databases&String&- Default is the directory the program is stored in\newline- Must be a valid directory\newline- Program must have read/write permissions in that directory\\
+    \hline
+    Target fitness for genetic algorithm&Float&- Default is 0.9\newline- Must be between 0 and 1 inclusive\\
+    \hline
+    Max iterations for genetic algorithm&Integer&- Default is 50\newline- Must be a positive integer not including 0\\
+    \hline
+    Size of populations for genetic algorithm&Integer&- Default is 100\newline- Must be a positive integer not including 0\\
     \hline
 
 \end{longtable}

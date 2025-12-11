@@ -2,12 +2,14 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+import sqlite3 as sql
 
 #=====GLOBAL CONSTANTS=====
 
 BG_COLOUR="#FFFFFF"
 HEADER_COLOUR="#FFDB32"
 LARGE_FONT=("Arial",30)
+DATABASE = "Code/database.db"
 
 #=====ROOT WINDOW=====
 #Constants for styling included within
@@ -49,6 +51,7 @@ class Window(tk.Tk):
 class HomePage(tk.Frame):
     def __init__(self,parent):
         tk.Frame.__init__(self, parent)
+
         self.label = ttk.Label(self, text="Welcome to AppName Grouping Tool!", font=LARGE_FONT)
         self.label.pack() 
 
@@ -92,7 +95,7 @@ class ProjectPage(tk.Frame):
         self.importButton=ttk.Button(self,text="Import from file",command=self.import_projects)
         self.importButton.pack()
 
-        self.addButton=ttk.Button(self,text="New project",command=self.new_project)
+        self.addButton=ttk.Button(self,text="New project",command=lambda:self.create_entry_window("New"))
         self.addButton.pack()
 
         #self.separator=ttk.Separator(self,orient="horizontal")
@@ -103,10 +106,34 @@ class ProjectPage(tk.Frame):
         self.update()
 
         self.projectBoxes={}
-        for i in range(10):
-            name="Name"+str(i)
-            self.projectBoxes[name]=projectBox(self.boxesFrame,self,name,0,0,True,["g"])
-            self.projectBoxes[name].pack(fill="x",padx=10,pady=5)
+        
+        #Display projects stored in the database on the UI
+        projectquery="SELECT * FROM Projects"
+        skillquery="SELECT Skill FROM ProjectSkills WHERE ProjectID = ?"
+        #Fetch project data, except skills
+        with sql.connect(DATABASE) as conn:
+            cur = conn.cursor()
+            cur.execute(projectquery)
+            projects=cur.fetchall()
+
+            for project in projects:
+                ID = project[0]
+                name=project[1]
+                maxSize=project[2]
+                minSize=project[3]
+                optional=bool(project[4])
+
+                #Fetch each project's skill requirements
+                cur.execute(skillquery,(ID,))
+                dbskills=cur.fetchall()
+                skills=[]
+                for skill in dbskills:
+                    skills.append(skill[0])
+
+                #Display data on UI
+                self.projectBoxes[ID]=projectBox(self.boxesFrame,self,ID,name,maxSize,minSize,optional,skills)
+                self.projectBoxes[ID].pack()
+
 
     #Method override as a work-around for a scrolling bug
     def update(self):
@@ -133,33 +160,41 @@ class ProjectPage(tk.Frame):
         file.close()
         return
         
-    def new_project(self):
-        
-        popupWin=entryPopupWin(self,"New project")
+    def create_entry_window(self,mode,**kwargs):
         name=tk.StringVar()
         maxSize=tk.StringVar()
         minSize=tk.StringVar()
         optional=tk.BooleanVar()
         skills=tk.StringVar()
 
-        popupWin.add_string_entry("Enter name:",name)
+        if mode == "Edit":
+            popupWin=entryPopupWin(self,"Edit Project")
+            name.set(kwargs["name"])
+            maxSize.set(kwargs["maxSize"])
+            minSize.set(kwargs["minSize"])
+            optional.set(kwargs["optional"])
+            skills.set(", ".join(kwargs["skills"]))
+        else:
+            popupWin=entryPopupWin(self,"New project")
 
-        popupWin.add_int_entry("Enter the maximum size allowed for this project's group:",maxSize)
+        popupWin.add_string_entry("Name:",name)
 
-        popupWin.add_int_entry("Enter the minimum size allowed for this project's group:",minSize)
+        popupWin.add_int_entry("Maximum size allowed for this project's group:",maxSize)
 
-        popupWin.add_checkbox("Is this project optional?",optional)
+        popupWin.add_int_entry("Minimum size allowed for this project's group:",minSize)
 
-        popupWin.add_string_entry("Enter skills, each one separated by a comma:",skills)
+        popupWin.add_checkbox("Optional:",optional)
 
-        popupWin.add_save_cancel(popupWin,name,maxSize,minSize,optional,skills)
+        popupWin.add_string_entry("Skills, each one separated by a comma:",skills)
 
-    def save_entry(self,window,*variables):
-        name=variables[0].get()
-        maxSize=variables[1].get()
-        minSize=variables[2].get()
-        optional=variables[3].get()
-        skills=variables[4].get()
+        popupWin.add_save_cancel(popupWin,mode,ID=kwargs["ID"],name=name,maxSize=maxSize,minSize=minSize,optional=optional,skills=skills)
+
+    def save_entry(self,window,mode,**kwargs):
+        name=kwargs["name"].get()
+        maxSize=kwargs["maxSize"].get()
+        minSize=kwargs["minSize"].get()
+        optional=kwargs["optional"].get()
+        skills=kwargs["skills"].get()
 
         #Validation to ensure all required entries are filled
         if name != "" and maxSize != "" and minSize != "" and skills != "":
@@ -172,24 +207,114 @@ class ProjectPage(tk.Frame):
             for i in range(len(skills)):
                 skills[i]=skills[i].strip()
 
-            #Display new project on the GUI
-            self.projectBoxes[name]=projectBox(self.boxesFrame,self,name,maxSize,minSize,optional,skills)
-            self.projectBoxes[name].pack(fill="x",padx=10,pady=5)
+            if mode == "Edit":
+                self.edit_project(kwargs["ID"],name,maxSize,minSize,optional,skills)
+            else:
+                self.new_project(name,maxSize,minSize,optional,skills)
 
             #Destroy the popup window
             window.destroy()
 
-            #Work-around for a scrollbar bug
-            self.update()
 
-    def editBox(self,boxName):
-        return
-    
-    def deleteBox(self,boxName):
-        self.projectBoxes[boxName].pack_forget()
-        del self.projectBoxes[boxName]
+    #Add the inputted data to the Project and Project Skills tables in the database
+    def new_project(self,name,maxSize,minSize,optional,skills):
+        mainquery="INSERT INTO Projects (Name, MaxSize, MinSize, Optional) VALUES (?,?,?,?)"
+        skillsquery="INSERT INTO ProjectSkills (ProjectID, Skill) VALUES (?,?)"
+        with sql.connect(DATABASE) as conn:
+            cur = conn.cursor()
+
+            cur.execute(mainquery,(name,maxSize,minSize,optional))
+
+            #Fetch the autogenerated ID for this student
+            ID=cur.lastrowid 
+
+            for skill in skills:
+                cur.execute(skillsquery,(ID, skill))
+
+            conn.commit()
+
+        #Display new project on the GUI
+        self.projectBoxes[ID]=projectBox(self.boxesFrame,self,ID,name,maxSize,minSize,optional,skills)
+        self.projectBoxes[ID].pack()
+
+        #Work-around for a scrollbar bug
         self.update()
+        
+    def edit_project(self,ID,name,maxSize,minSize,optional,skills):
+        edited=False
+        box=self.projectBoxes[ID]
+        oldData=box.get_data()
 
+        #Only updates if the new data is different from the old data
+        with sql.connect(DATABASE) as conn:
+            cur = conn.cursor()
+
+            if name != oldData["name"]:
+                edited=True
+
+                query = "UPDATE Projects SET Name = ? WHERE ProjectID = ?"
+                cur.execute(query,(name,ID))
+
+                box.edit_data(name=name)
+
+            if maxSize != oldData["maxSize"]:
+                edited=True
+
+                query="UPDATE Projects SET maxSize = ? WHERE ProjectID = ?"
+                cur.execute(query,(maxSize,ID))
+
+                box.edit_data(maxSize=maxSize)
+
+            if minSize != oldData["minSize"]:
+                edited=True
+
+                query="UPDATE Projects SET minSize = ? WHERE ProjectID = ?"
+                cur.execute(query,(minSize,ID))
+
+                box.edit_data(minSize=minSize)
+
+            if optional != oldData["optional"]:
+                edited=True
+
+                query="UPDATE Projects SET optional = ? WHERE ProjectID = ?"
+                cur.execute(query,(optional,ID))
+
+                box.edit_data(optional=optional)
+
+            if skills != oldData["skills"]:
+                edited=True
+                
+                cur.execute("DELETE FROM ProjectSkills WHERE ProjectID = ?",(ID,))
+                query = "INSERT INTO ProjectSkills (ProjectID, Skill) VALUES (?,?)"
+                for skill in skills:
+                    cur.execute(query,(ID,skill))
+
+                box.edit_data(skills=skills)
+                    
+            if edited:
+                self.update()
+                conn.commit()
+
+    def editBox(self,boxID):
+        box=self.projectBoxes[boxID]
+        data=box.get_data()
+        self.create_entry_window("Edit",ID=data["ID"],name=data["name"], maxSize=data["maxSize"],minSize=data["minSize"], optional=data["optional"], skills=data["skills"])
+    
+    def deleteBox(self,boxID):
+        #Delete from database
+        query1 = "DELETE FROM Projects WHERE ProjectID=?"
+        query2 = "DELETE FROM ProjectSkills WHERE ProjectID=?"
+        with sql.connect(DATABASE) as conn:
+            cur = conn.cursor()
+            cur.execute(query1,(boxID,))
+            cur.execute(query2,(boxID,))
+            conn.commit()
+        #Delete from UI
+        self.projectBoxes[boxID].pack_forget()
+        #Delete from internal store
+        del self.projectBoxes[boxID]
+
+        self.update()
 
 
 
@@ -206,7 +331,7 @@ class StudentPage(tk.Frame):
         self.importButton=ttk.Button(self,text="Import from file",command=self.import_students)
         self.importButton.pack()
 
-        self.addButton=ttk.Button(self,text="New student",command=self.new_student)
+        self.addButton=ttk.Button(self,text="New student",command=lambda:self.create_entry_window("New"))
         self.addButton.pack()
 
         self.boxesFrame=ScrollableFrame(self)
@@ -214,10 +339,31 @@ class StudentPage(tk.Frame):
         self.update()
 
         self.studentBoxes={}
-        for i in range(10):
-            name="Name"+str(i)
-            self.studentBoxes[name]=studentBox(self.boxesFrame,self,name,"F",["G"])
-            self.studentBoxes[name].pack(fill="x",padx=10,pady=5)
+
+        #Display students stored in the database on the UI
+        studentquery="SELECT * FROM Students"
+        skillquery="SELECT Skill FROM StudentSkills WHERE StudentID=?"
+        #Fetch student data, except skills
+        with sql.connect(DATABASE) as conn:
+            cur = conn.cursor()
+            cur.execute(studentquery)
+            students=cur.fetchall()
+        
+            for student in students:
+                ID=student[0]
+                name=student[1]
+                gender=student[2]
+
+                #Fetch each student's skills
+                cur.execute(skillquery,(ID,))
+                dbskills=cur.fetchall()
+                skills=[]
+                for skill in dbskills:
+                    skills.append(skill[0])
+
+                #Display data on UI
+                self.studentBoxes[ID]=studentBox(self.boxesFrame,self,ID,name,gender,skills)
+                self.studentBoxes[ID].pack()
 
     #Method override as a work-around for a scrolling bug
     def update(self):
@@ -243,24 +389,31 @@ class StudentPage(tk.Frame):
         file.close()
         return
         
-    def new_student(self):
-        popupWin=entryPopupWin(self,"New student")
+    def create_entry_window(self,mode,**kwargs):
         name=tk.StringVar()
         gender=tk.StringVar()
         skills=tk.StringVar()
 
-        popupWin.add_string_entry("Enter name:", name)
+        if mode == "Edit":
+            popupWin=entryPopupWin(self, "Edit student")
+            name.set(kwargs["name"])
+            gender.set(kwargs["gender"])
+            skills.set(", ".join(kwargs["skills"]))
+        else:
+            popupWin=entryPopupWin(self,"New student")
 
-        popupWin.add_string_entry("Enter gender:",gender)
+        popupWin.add_string_entry("Name:", name)
 
-        popupWin.add_string_entry("Enter skills, each one separated by a comma:",skills)
+        popupWin.add_string_entry("Gender:",gender)
 
-        popupWin.add_save_cancel(popupWin,name,gender,skills)
+        popupWin.add_string_entry("Skills, each one separated by a comma:",skills)
+
+        popupWin.add_save_cancel(popupWin,mode,ID=kwargs["ID"],name=name,gender=gender,skills=skills)
     
-    def save_entry(self,window,*variables):
-        name=variables[0].get()
-        gender=variables[1].get()
-        skills=variables[2].get()
+    def save_entry(self,window,mode,**kwargs):
+        name=kwargs["name"].get()
+        gender=kwargs["gender"].get()
+        skills=kwargs["skills"].get()
 
         #Validation to ensure all required entries are filled
         if name != "" and gender != "" and skills != "":
@@ -270,23 +423,101 @@ class StudentPage(tk.Frame):
             for i in range(len(skills)):
                 skills[i]=skills[i].strip()
 
-            #Display new student on the GUI
-            self.studentBoxes[name]=studentBox(self.boxesFrame,self,name,gender,skills)
-            self.studentBoxes[name].pack(fill="x",padx=10,pady=5)
-
+            if mode == "Edit":
+                self.edit_student(kwargs["ID"],name,gender,skills)
+            else:
+                self.new_student(name,gender,skills)
+            
             #Destroy the popup window
             window.destroy()
 
-            #Scroll bar bug work-around
-            self.update()
 
-    def editBox(self,boxName):
-        return
-    
-    def deleteBox(self,boxName):
-        self.studentBoxes[boxName].pack_forget()
-        del self.studentBoxes[boxName]
+    #Add the inputted data to the Student and StudentSkills tables in the database
+    def new_student(self,name,gender,skills):
+        mainquery="INSERT INTO Students (Name, Gender) VALUES (?,?)"
+        skillsquery="INSERT INTO StudentSkills (StudentID, Skill) VALUES (?,?)"
+        with sql.connect(DATABASE) as conn:
+            cur = conn.cursor()
+
+            cur.execute(mainquery,(name,gender))
+
+            #Fetch the autogenerated ID for this student
+            ID=cur.lastrowid 
+
+            for skill in skills:
+                cur.execute(skillsquery,(ID, skill))
+
+            conn.commit()
+
+        #Display new student on the GUI
+        self.studentBoxes[ID]=studentBox(self.boxesFrame,self,ID,name,gender,skills)
+        self.studentBoxes[ID].pack()
+
+        #Scroll bar bug work-around
         self.update()
+
+
+    def edit_student(self,ID,name,gender,skills):
+        edited=False
+
+        box=self.studentBoxes[ID]
+        oldData=box.get_data()
+
+        #Only updates if the new data is different from the old data
+        with sql.connect(DATABASE) as conn:
+            cur = conn.cursor()
+
+            if name != oldData["name"]:
+                edited=True
+
+                query = "UPDATE Students SET Name = ? WHERE StudentID = ?"
+                cur.execute(query,(name,ID))
+
+                box.edit_data(name=name)
+
+            if gender != oldData["gender"]:
+                edited=True
+
+                query="UPDATE Students SET Gender = ? WHERE StudentID = ?"
+                cur.execute(query,(gender,ID))
+
+                box.edit_data(gender=gender)
+
+            if skills != oldData["skills"]:
+                edited=True
+                
+                cur.execute("DELETE FROM StudentSkills WHERE StudentID = ?",(ID,))
+                query = "INSERT INTO StudentSkills (StudentID, Skill) VALUES (?,?)"
+                for skill in skills:
+                    cur.execute(query,(ID,skill))
+
+                box.edit_data(skills=skills)
+                    
+            if edited:
+                self.update()
+                conn.commit()
+
+    def editBox(self,boxID):
+        box=self.studentBoxes[boxID]
+        data=box.get_data()
+        self.create_entry_window("Edit", ID=data["ID"],name=data["name"],gender=data["gender"],skills=data["skills"])
+    
+    def deleteBox(self,boxID):
+        #Delete from database
+        query1 = "DELETE FROM Students WHERE StudentID=?"
+        query2 = "DELETE FROM StudentSkills WHERE StudentID=?"
+        with sql.connect(DATABASE) as conn:
+            cur = conn.cursor()
+            cur.execute(query1,(boxID,))
+            cur.execute(query2,(boxID,))
+            conn.commit()
+        #Delete from UI
+        self.studentBoxes[boxID].pack_forget()
+        #Delete from internal store
+        del self.studentBoxes[boxID]
+
+        self.update()
+
 
 
 class LoadingPage(tk.Frame):
@@ -350,14 +581,15 @@ class ScrollableFrame(tk.Frame):
 
 #Has checkbox, name, edit button, delete button.
 class selectionBox(tk.Frame):
-    def __init__(self,parent,page,name):
+    def __init__(self,parent,page,ID,name):
         tk.Frame.__init__(self,parent,relief="solid",bd=2)
 
+        self.ID=ID
         self.name=name
         self.page=page
 
         self.selected=tk.BooleanVar(value=False)
-        self.checkbox=ttk.Checkbutton(self,variable=self.selected,name=name.lower(),onvalue=True,offvalue=False)
+        self.checkbox=ttk.Checkbutton(self,variable=self.selected,onvalue=True,offvalue=False)
         self.checkbox.pack()
 
         self.nameLabel=ttk.Label(self,text=name)
@@ -373,40 +605,73 @@ class selectionBox(tk.Frame):
         return self.selected.get()
 
     def edit(self):
-        self.page.editBox(self.name)
+        self.page.editBox(self.ID)
     
     def delete(self):
         delChoice=messagebox.askyesno(title="Delete entry", message=f"Are you sure you want to delete {self.name}?")
         if delChoice:
             self.selected.set(False)
-            self.page.deleteBox(self.name)
+            self.page.deleteBox(self.ID)
+    
+    def pack(self):
+        tk.Frame.pack(self,fill="x",padx=10,pady=5)
+
+    #-----Abstract methods-----
+    def get_data(self):
+        return
+    
+    def edit_data(self):
+        return
         
 
 class projectBox(selectionBox):
-    def __init__(self,parent,page,name,maxSize,minSize,optional,skills):
-        selectionBox.__init__(self,parent,page,name)
+    def __init__(self,parent,page,ID,name,maxSize,minSize,optional,skills):
+        selectionBox.__init__(self,parent,page,ID,name)
+        self.maxSize=maxSize
+        self.minSize=minSize
+        self.optional=optional
+        self.skills=skills
 
-        self.maxSize=ttk.Label(self,text=f"Max group size: {maxSize}")
-        self.maxSize.pack()
+        self.maxSizeLabel=ttk.Label(self,text=f"Max group size: {maxSize}")
+        self.maxSizeLabel.pack()
 
-        self.minSize=ttk.Label(self,text=f"Min group size: {minSize}")
-        self.minSize.pack()
+        self.minSizeLabel=ttk.Label(self,text=f"Min group size: {minSize}")
+        self.minSizeLabel.pack()
 
-        self.optional=ttk.Label(self,text=f"Optional: {optional}")
-        self.optional.pack()
+        self.optionalLabel=ttk.Label(self,text=f"Optional: {optional}")
+        self.optionalLabel.pack()
 
-        self.skills=ttk.Label(self,text=f"Skills: {", ".join(skills)}")
-        self.skills.pack()
+        self.skillsLabel=ttk.Label(self,text=f"Skills: {", ".join(skills)}")
+        self.skillsLabel.pack()
+
+    def get_data(self):
+        return {"ID":self.ID,"name":self.name,"maxSize":self.maxSize,"minSize":self.minSize,"optional":self.optional,"skills":self.skills}
 
 class studentBox(selectionBox):
-    def __init__(self, parent, page, name, gender, skills):
-        selectionBox.__init__(self,parent,page,name)
+    def __init__(self, parent, page, ID, name, gender, skills):
+        selectionBox.__init__(self,parent,page,ID,name)
+        self.gender=gender
+        self.skills=skills
 
-        self.gender = ttk.Label(self,text=f"Gender: {gender}")
-        self.gender.pack()
+        self.genderLabel = ttk.Label(self,text=f"Gender: {gender}")
+        self.genderLabel.pack()
 
-        self.skills = ttk.Label(self, text= f"Skills: {", ".join(skills)}")
-        self.skills.pack()
+        self.skillsLabel = ttk.Label(self, text= f"Skills: {", ".join(skills)}")
+        self.skillsLabel.pack()
+
+    def get_data(self):
+        return {"ID":self.ID,"name":self.name,"gender":self.gender,"skills":self.skills}
+    
+    def edit_data(self,**kwargs):
+        if "name" in kwargs:
+            self.name=kwargs["name"]
+            self.nameLabel.config(text=self.name)
+        if "gender" in kwargs:
+            self.gender=kwargs["gender"]
+            self.genderLabel.config(text=f"Gender: {self.gender}")
+        if "skills" in kwargs:
+            self.skills=kwargs["skills"]
+            self.skillsLabel.config(text=f"Skills: {", ".join(self.skills)}")
 
 
 class entryPopupWin(tk.Toplevel):
@@ -418,7 +683,7 @@ class entryPopupWin(tk.Toplevel):
         ttk.Label(self, text=text).pack()
         ttk.Entry(self, textvariable=variable).pack()
 
-    def add_int_entry(self,text,variable):
+    def add_int_entry(self,text,variable,minimum=0,maximum=100,increment=1):
 
         #Prevents user from typing non numbers into number-only entry boxes
         def intCallback(P):
@@ -427,17 +692,15 @@ class entryPopupWin(tk.Toplevel):
         intValidate = (self.register(intCallback), '%P')
         
         ttk.Label(self, text=text).pack()
-        ttk.Entry(self, textvariable=variable,validate="all",validatecommand=intValidate).pack()
+        ttk.Spinbox(self, textvariable=variable,validate="all",validatecommand=intValidate,from_=minimum,increment=increment,to=maximum).pack()
     
     def add_checkbox(self,text,variable):
         ttk.Label(self, text=text).pack()
         ttk.Checkbutton(self, variable=variable, onvalue=True, offvalue=False).pack()
     
-    def add_save_cancel(self,window,*variables):
-        ttk.Button(self, text="Save", command=lambda:self.master.save_entry(window,*variables)).pack()
+    def add_save_cancel(self,window,mode,**kwargs):
+        ttk.Button(self, text="Save", command=lambda:self.master.save_entry(window,mode,**kwargs)).pack()
         ttk.Button(self, text="Cancel", command=self.destroy).pack()
-
-    
 
 #=====MAIN=====
 
