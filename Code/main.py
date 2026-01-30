@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
-from tkinter import messagebox
+from tkinter import ttk, filedialog, messagebox
 import sqlite3 as sql
+import csv
+import re
 
 #=====GLOBAL CONSTANTS=====
 
@@ -10,14 +10,16 @@ BG_COLOUR="#FFFFFF"
 HEADER_COLOUR="#FFDB32"
 LARGE_FONT=("Arial",30)
 DATABASE = "Code/database.db"
+SQLFILEHEADER="SQLite format 3"
 
 #=====ROOT WINDOW=====
 #Constants for styling included within
 
 class Window(tk.Tk):
     def __init__(self):
-        #Setup window
+        #Set up window
         tk.Tk.__init__(self)
+
         self.state('zoomed')
         self.geometry(f"{self.winfo_screenwidth()-10}x{self.winfo_screenheight()}")
         self.title('Student Grouping Tool')
@@ -29,9 +31,11 @@ class Window(tk.Tk):
         HEADER_BUTTON_STYLE.configure("Header.TButton",background=HEADER_COLOUR)
         
         #================
-        #Dictionary that will store all loaded pages
+        #Dictionary that stores all loaded pages
         self.frames={}
-        #Show the home page first
+        #Load the saved settings
+        self.load_settings()
+        #Load the homepage first
         self.show_frame(HomePage)
 
     #Method for changing currently open page
@@ -46,14 +50,25 @@ class Window(tk.Tk):
             frame.place(relx=0,rely=0,relwidth=1,relheight=1)
         frame.tkraise()
 
+    def load_settings(self):
+        #Checks for settings.json, if exists load data. If not create settings.json with the default values. Regardless after load settings page into the dict with the required settings as params.
+        frame=SettingsPage(self,0.9,50,100)
+        self.frames[SettingsPage]=frame
+        frame.place(relx=0,rely=0,relwidth=1,relheight=1)
+        return
+
 #=====PAGES=====
 
 class HomePage(tk.Frame):
     def __init__(self,parent):
+        #Set up home page layout
         tk.Frame.__init__(self, parent)
 
+        self.settingsButton = ttk.Button(self,text="Settings",command=lambda:parent.show_frame(SettingsPage))
+        self.settingsButton.pack()
+
         self.label = ttk.Label(self, text="Welcome to AppName Grouping Tool!", font=LARGE_FONT)
-        self.label.pack() 
+        self.label.pack()
 
         self.projectButton = ttk.Button(self,text="Choose Projects",command=lambda:parent.show_frame(ProjectPage))
         self.projectButton.pack() 
@@ -67,8 +82,8 @@ class HomePage(tk.Frame):
         self.warning = ttk.Label(self,text="Must choose projects and students first")
 
 
-    #This method runs once everytime the page is opened
-    def tkraise(self):
+    #Method override that runs once everytime the page is opened
+    def tkraise(self,*args,**kwargs):
         tk.Frame.tkraise(self)
 
         #If at least one student and one project has been selected, allow the run button to be clickable and remove the warning message
@@ -84,12 +99,13 @@ class HomePage(tk.Frame):
 
 class ProjectPage(tk.Frame):
     def __init__(self,parent):
+        #Set up the project page layout
         tk.Frame.__init__(self,parent)
 
         self.header=Header(self,"Projects",HEADER_COLOUR) 
         self.header.pack(fill="x")
 
-        self.backButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage)) #Change to check where it should go back to
+        self.backButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage))
         self.backButton.pack(side="right")
 
         self.importButton=ttk.Button(self,text="Import from file",command=self.import_projects)
@@ -105,34 +121,40 @@ class ProjectPage(tk.Frame):
         self.boxesFrame.canvas.pack(fill="both",expand=True)
         self.update()
 
+        #Get and show project data from the database
         self.projectBoxes={}
-        
-        #Display projects stored in the database on the UI
-        projectquery="SELECT * FROM Projects"
-        skillquery="SELECT Skill FROM ProjectSkills WHERE ProjectID = ?"
-        #Fetch project data, except skills
-        with sql.connect(DATABASE) as conn:
+        self.fetch_from_db(DATABASE)
+
+
+    def fetch_from_db(self,path):
+        #Fetch all project data from a database
+        query="SELECT * from Projects LEFT JOIN ProjectSkills using (ProjectID)"
+        with sql.connect(path) as conn:
             cur = conn.cursor()
-            cur.execute(projectquery)
+            cur.execute(query)
             projects=cur.fetchall()
 
             for project in projects:
-                ID = project[0]
-                name=project[1]
-                maxSize=project[2]
-                minSize=project[3]
-                optional=bool(project[4])
+                ID=project[0]
+                #When a project has multiple skills, the ID is repeated in the recieved tuple for each skill
+                if ID in self.projectBoxes:
+                    #The next skill is appended to the existing list of skills for this ID
+                    data=self.projectBoxes[ID].get_data()
+                    
+                    skills=data["skills"]
+                    skills.append(project[5])
+                    self.projectBoxes[ID].edit_data(skills=skills)
 
-                #Fetch each project's skill requirements
-                cur.execute(skillquery,(ID,))
-                dbskills=cur.fetchall()
-                skills=[]
-                for skill in dbskills:
-                    skills.append(skill[0])
-
-                #Display data on UI
-                self.projectBoxes[ID]=projectBox(self.boxesFrame,self,ID,name,maxSize,minSize,optional,skills)
-                self.projectBoxes[ID].pack()
+                #If the project has not been added to the dictionary yet, add it
+                else:
+                    #Unpack the data, keeping data that should not be of type string spearate
+                    *data,optional,skills=project
+                    #Convert to correct data type
+                    optional=bool(optional)
+                    skills=[skills]
+                    #Store data and display data on UI
+                    self.projectBoxes[ID]=projectBox(self.boxesFrame,self,*data,optional,skills)
+                    self.projectBoxes[ID].pack()
 
 
     #Method override as a work-around for a scrolling bug
@@ -141,24 +163,13 @@ class ProjectPage(tk.Frame):
         tk.Frame.update(self)
         self.master.state('zoomed')
 
-    #Iterates through every project, and returns true if it finds a selected project. Returns false when no project is selected.
+    #Iterates through each project, returning true as soon as it finds a selected project. Returns false when no project is selected.
     def check_for_selection(self):
         for box in self.projectBoxes:
             if self.projectBoxes[box].check_selection():
                 return True
         return False    
 
-    def import_projects(self):
-        #Show an "Open" dialog box and return an open file object in read mode
-        file = filedialog.askopenfile(mode='r',filetypes=[("Supported file types",".txt .csv")]) #Add excel
-        #Validation to ensure the user selected a file
-        if file == None:
-            return
-        
-        #<<<---------------------------------------------
-
-        file.close()
-        return
         
     def create_entry_window(self,mode,**kwargs):
         name=tk.StringVar()
@@ -166,6 +177,7 @@ class ProjectPage(tk.Frame):
         minSize=tk.StringVar()
         optional=tk.BooleanVar()
         skills=tk.StringVar()
+        data={"name":name,"maxSize":maxSize,"minSize":minSize,"optional":optional,"skills":skills}
 
         if mode == "Edit":
             popupWin=entryPopupWin(self,"Edit Project")
@@ -174,7 +186,8 @@ class ProjectPage(tk.Frame):
             minSize.set(kwargs["minSize"])
             optional.set(kwargs["optional"])
             skills.set(", ".join(kwargs["skills"]))
-        else:
+            data["ID"]=kwargs["ID"]
+        else: 
             popupWin=entryPopupWin(self,"New project")
 
         popupWin.add_string_entry("Name:",name)
@@ -187,7 +200,7 @@ class ProjectPage(tk.Frame):
 
         popupWin.add_string_entry("Skills, each one separated by a comma:",skills)
 
-        popupWin.add_save_cancel(popupWin,mode,ID=kwargs["ID"],name=name,maxSize=maxSize,minSize=minSize,optional=optional,skills=skills)
+        popupWin.add_save_cancel(popupWin,mode,**data)
 
     def save_entry(self,window,mode,**kwargs):
         name=kwargs["name"].get()
@@ -214,6 +227,36 @@ class ProjectPage(tk.Frame):
 
             #Destroy the popup window
             window.destroy()
+
+    
+    def import_projects(self):
+        def importtxt(path):
+            file=open(path,mode="r")
+        def importcsv(path):
+            file=open(path,newline='')
+            reader=csv.reader(file)
+            
+
+        def importdb(path):
+            return
+        #Show an "Open" dialog box and return file directory
+        path = filedialog.askopenfilename() #Add excel
+        #Validation to ensure the user selected a valid file type
+        if path != None:
+            match path[-4:]:
+                case ".txt":
+                    importtxt(path)
+                case ".csv":
+                    importcsv(path)
+                case _:
+                    if checkForDB(path):
+                        importdb(path)
+                    else:
+                        messagebox.showwarning(title="Import Warning", message="File type unrecognised!")
+
+        else:
+            messagebox.showwarning(title="Import Warning", message="No file selected!")
+
 
 
     #Add the inputted data to the Project and Project Skills tables in the database
@@ -260,7 +303,7 @@ class ProjectPage(tk.Frame):
             if maxSize != oldData["maxSize"]:
                 edited=True
 
-                query="UPDATE Projects SET maxSize = ? WHERE ProjectID = ?"
+                query="UPDATE Projects SET MaxSize = ? WHERE ProjectID = ?"
                 cur.execute(query,(maxSize,ID))
 
                 box.edit_data(maxSize=maxSize)
@@ -268,7 +311,7 @@ class ProjectPage(tk.Frame):
             if minSize != oldData["minSize"]:
                 edited=True
 
-                query="UPDATE Projects SET minSize = ? WHERE ProjectID = ?"
+                query="UPDATE Projects SET MinSize = ? WHERE ProjectID = ?"
                 cur.execute(query,(minSize,ID))
 
                 box.edit_data(minSize=minSize)
@@ -276,7 +319,7 @@ class ProjectPage(tk.Frame):
             if optional != oldData["optional"]:
                 edited=True
 
-                query="UPDATE Projects SET optional = ? WHERE ProjectID = ?"
+                query="UPDATE Projects SET Optional = ? WHERE ProjectID = ?"
                 cur.execute(query,(optional,ID))
 
                 box.edit_data(optional=optional)
@@ -320,12 +363,13 @@ class ProjectPage(tk.Frame):
 
 class StudentPage(tk.Frame):
     def __init__(self,parent):
+        #Set up student page layout
         tk.Frame.__init__(self, parent)
 
         self.header=Header(self,"Students",HEADER_COLOUR) 
         self.header.pack(fill="x")
 
-        self.backButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage)) #Change to check where it should go back to
+        self.backButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage))
         self.backButton.pack(side="right")
 
         self.importButton=ttk.Button(self,text="Import from file",command=self.import_students)
@@ -340,10 +384,8 @@ class StudentPage(tk.Frame):
 
         self.studentBoxes={}
 
-        #Display students stored in the database on the UI
-        studentquery="SELECT * FROM Students"
-        skillquery="SELECT Skill FROM StudentSkills WHERE StudentID=?"
-        #Fetch student data, except skills
+        #Fetch all student data from the database
+        studentquery="SELECT * from Students LEFT JOIN StudentSkills using (StudentID)"
         with sql.connect(DATABASE) as conn:
             cur = conn.cursor()
             cur.execute(studentquery)
@@ -351,19 +393,22 @@ class StudentPage(tk.Frame):
         
             for student in students:
                 ID=student[0]
-                name=student[1]
-                gender=student[2]
-
-                #Fetch each student's skills
-                cur.execute(skillquery,(ID,))
-                dbskills=cur.fetchall()
-                skills=[]
-                for skill in dbskills:
-                    skills.append(skill[0])
-
-                #Display data on UI
-                self.studentBoxes[ID]=studentBox(self.boxesFrame,self,ID,name,gender,skills)
-                self.studentBoxes[ID].pack()
+                #When a student has multiple skills, the ID is repeated in the recieved tuple for each skill
+                if ID in self.studentBoxes:
+                    #The next skill is appended to the existing list of skills for this ID
+                    data=self.studentBoxes[ID].get_data()
+                    skills=data["skills"]
+                    skills.append(student[3])
+                    self.studentBoxes[ID].edit_data(skills=skills)
+                #If the student has not been added to the dictionary yet, add it
+                else:
+                    #Unpack the data, keeping data that should not be of type string spearate
+                    *data,skills=student
+                    #Convert to correct data type
+                    skills=[skills]
+                    #Store data and display on UI
+                    self.studentBoxes[ID]=studentBox(self.boxesFrame,self,*data,skills)
+                    self.studentBoxes[ID].pack()
 
     #Method override as a work-around for a scrolling bug
     def update(self):
@@ -393,12 +438,14 @@ class StudentPage(tk.Frame):
         name=tk.StringVar()
         gender=tk.StringVar()
         skills=tk.StringVar()
+        data={"name":name,"gender":gender,"skills":skills}
 
         if mode == "Edit":
             popupWin=entryPopupWin(self, "Edit student")
             name.set(kwargs["name"])
             gender.set(kwargs["gender"])
             skills.set(", ".join(kwargs["skills"]))
+            data["ID"]=kwargs["ID"]
         else:
             popupWin=entryPopupWin(self,"New student")
 
@@ -408,7 +455,7 @@ class StudentPage(tk.Frame):
 
         popupWin.add_string_entry("Skills, each one separated by a comma:",skills)
 
-        popupWin.add_save_cancel(popupWin,mode,ID=kwargs["ID"],name=name,gender=gender,skills=skills)
+        popupWin.add_save_cancel(popupWin,mode,**data)
     
     def save_entry(self,window,mode,**kwargs):
         name=kwargs["name"].get()
@@ -522,6 +569,7 @@ class StudentPage(tk.Frame):
 
 class LoadingPage(tk.Frame):
     def __init__(self,parent):
+        #Set up loading page layout
         tk.Frame.__init__(self, parent)
 
         self.label = ttk.Label(self, text="Grouping in progress...")
@@ -530,8 +578,19 @@ class LoadingPage(tk.Frame):
         self.cancelButton=ttk.Button(self,text="Cancel",command=lambda:parent.show_frame(HomePage))
         self.cancelButton.pack()
 
+    #Method override that runs once everytime the page is opened
+    def tkraise(self,*args,**kwargs):
+        tk.Frame.tkraise(self,args,kwargs)
+        #result=run(vars)
+        #if result["status"]==-1:
+            #Display error
+        #else:
+            #ResultsPage()
+
+
 class ResultsPage(tk.Frame):
     def __init__(self,parent):
+        #Set up results page layout
         tk.Frame.__init__(self, parent)
 
         self.header=Header(self,"Results",HEADER_COLOUR) 
@@ -542,6 +601,7 @@ class ResultsPage(tk.Frame):
 
 class RegisterPage(tk.Frame):
     def __init__(self,parent):
+        #Set up register page layout
         tk.Frame.__init__(self, parent)
 
         self.header=Header(self,"Register",HEADER_COLOUR) 
@@ -550,13 +610,121 @@ class RegisterPage(tk.Frame):
         self.homeButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage))
         self.homeButton.pack(side="right")
 
+
+class SettingsPage(tk.Frame):
+    def __init__(self,parent,fitness,iterations,popSize):
+        #Set up swttings page layout
+        tk.Frame.__init__(self,parent)
+        self.fitness=fitness
+        self.iterations=iterations
+        self.popSize=popSize
+
+        self.header=Header(self,"Settings",HEADER_COLOUR)
+        self.header.pack(fill="x")
+
+        self.backButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=self.go_back)
+        self.backButton.pack(side="right")
+
+        self.fitnessVar=tk.DoubleVar(value=self.fitness)
+        self.iterVar=tk.IntVar(value=self.iterations)
+        self.popSizeVar=tk.IntVar(value=self.popSize)
+
+        ttk.Button(self,text="Export database", command=self.export_db).pack()
+
+        #Only allows user to type a decimal number between 0 and 1, no other characters
+        def fitnessCallback(P):
+            if re.match("^0(\\.\\d*)?$",P) or re.match("^1(\\.0*)?$",P) or P == "":
+                return True
+            return False
+        
+        #Only allows the user to enter positive integers
+        def posIntCallback(P):
+            return str.isdigit(P) or P==""
+        
+        fitnessValidate = (self.register(fitnessCallback), '%P')
+        posIntValidate = (self.register(posIntCallback), '%P')
+        
+        ttk.Label(self, text="Target fitness for genetic algorithm (Must be between 0-1).").pack()
+        ttk.Label(self,text="Higher target fitness means better groups, with 1 being perfect groupings. May not be reached if maximum iterations is reached").pack()
+        ttk.Spinbox(self, textvariable=self.fitnessVar,validate="all",validatecommand=fitnessValidate,from_=0,increment=0.05,to=1).pack()
+
+        ttk.Label(self,text="Maximum iterations the genetic algorithm could complete (may be less if target fitness is reached).").pack()
+        ttk.Spinbox(self,textvariable=self.iterVar,validate="all",validatecommand=posIntValidate,from_=1,increment=5,to=100).pack()
+
+        ttk.Label(self,text="Size of populations for genetic algorithm. Greater sizes leads to longer runtime, but better results.").pack()
+        ttk.Spinbox(self,textvariable=self.popSizeVar,validate="all",validatecommand=posIntValidate,from_=1,increment=10,to=200).pack()
+
+        ttk.Button(self, text="Save", command=self.save_settings).pack()
+
+    #Method override that runs once everytime this page is opened
+    def tkraise(self,*args,**kwargs):
+        self.fitnessVar.set(self.fitness)
+        self.iterVar.set(self.iterations)
+        self.popSizeVar.set(self.popSize)
+        tk.Frame.tkraise(self)
+    
+    def get_settings(self):
+        return {"fitness":self.fitness,"iters":self.iter,"popSize":self.popSize}
+
+    def go_back(self): #Only show message when setting has been changed
+        choice=messagebox.askyesno("Warning","Going back will not save your changes. Do you still wish to proceed?",icon="warning")
+        if choice:
+            self.master.show_frame(HomePage)
+
+    def validate(self):
+        #if re.match("^0(\\.\\d+)?$",) or re.match("1(\\.0*)?$",P):
+            return True
+        #return False
+
+    #Validate and save settings input
+    def save_settings(self):
+        valid=self.validate()
+        if valid:
+            self.fitness=float(self.fitnessVar.get())
+            self.iterations=int(self.iterVar.get())
+            self.popSize=int(self.popSizeVar.get())
+            self.master.show_frame(HomePage)
+            #Update settings.json
+
+    def export_db(self): #The ui for selecting details before selecting directory
+        self.write_csv()
+    
+    #Save database to a csv file
+    def write_csv(self):
+        filetype=[("CSV file",".csv")]
+        file = filedialog.asksaveasfile(filetypes=filetype, defaultextension=filetype)
+        if file is not None:
+            with sql.connect(DATABASE) as conn:
+                cur = conn.cursor()
+                #Fetch names of every table
+                cur.execute("SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';")
+                tables=cur.fetchall()
+                #Fetch all the data from each table
+                for table in tables:
+                    data=cur.execute("SELECT * FROM "+str(table[0]))
+
+                    #Write to the csv
+                    writer = csv.writer(file)
+                    writer.writerow("")
+                    writer.writerow(table)
+                    #Get attribute names
+                    cols=[]
+                    for col in data.description:
+                        cols.append(col[0])
+                    writer.writerow(cols)
+                    writer.writerows(data)
+        else:
+            #Warn the user export was not successful
+            return
+        file.close()
+
 #=====WIDGETS=====
 
 class Header(tk.Frame):
     def __init__(self,parent,text,colour):
         tk.Frame.__init__(self,parent)
         self.config(bg=colour)
-        self.label = tk.Label(self, text=text, bg=colour,font=LARGE_FONT) #change to ttk
+        self.label = tk.Label(self, text=text, bg=colour,font=LARGE_FONT)
         self.label.pack(side="left")
 
 class ScrollableFrame(tk.Frame):
@@ -646,6 +814,23 @@ class projectBox(selectionBox):
 
     def get_data(self):
         return {"ID":self.ID,"name":self.name,"maxSize":self.maxSize,"minSize":self.minSize,"optional":self.optional,"skills":self.skills}
+    
+    def edit_data(self,**kwargs):
+        if "name" in kwargs:
+            self.name=kwargs["name"]
+            self.nameLabel.config(text=self.name)
+        if "maxSize" in kwargs:
+            self.maxSize=kwargs["maxSize"]
+            self.maxSizeLabel.config(text=f"Max group size: {self.maxSize}")
+        if "minSize" in kwargs:
+            self.minSize=kwargs["minSize"]
+            self.minSizeLabel.config(text=f"Min group size: {self.minSize}")
+        if "optional" in kwargs:
+            self.optional=kwargs["optional"]
+            self.optionalLabel.config(text=f"Optional: {self.optional}")
+        if "skills" in kwargs:
+            self.skills=kwargs["skills"]
+            self.skillsLabel.config(text=f"Skills: {", ".join(self.skills)}")
 
 class studentBox(selectionBox):
     def __init__(self, parent, page, ID, name, gender, skills):
@@ -701,6 +886,21 @@ class entryPopupWin(tk.Toplevel):
     def add_save_cancel(self,window,mode,**kwargs):
         ttk.Button(self, text="Save", command=lambda:self.master.save_entry(window,mode,**kwargs)).pack()
         ttk.Button(self, text="Cancel", command=self.destroy).pack()
+
+    
+#=====SUBROUTINES=====
+def checkForDB(path):
+    #Database files could have any extension, but they all start with the same first 15 characters.
+    file=open(path,"rb")
+    line=file.read(15)
+    file.close()
+    #Convert binary to string
+    line="".join(chr(x) for x in line)
+    if line == "SQLite format 3":
+        return True
+    return False
+
+
 
 #=====MAIN=====
 

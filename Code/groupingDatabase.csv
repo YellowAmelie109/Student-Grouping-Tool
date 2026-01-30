@@ -1,0 +1,45 @@
+
+Students
+StudentID,Name,Gender
+1,Michael,Non-binary
+3,Alex,Female
+4,Emma,Female
+5,George,Male
+6,Coby,Non-binary
+
+StudentSkills
+StudentID,Skill
+1,Crochet
+4,Computer Science
+4,Maths
+4,Geography
+5,History
+5,Mechanics
+3,Computer Science
+3,Engineering
+3,Statistics
+6,Maths
+
+Projects
+ProjectID,Name,MaxSize,MinSize,Optional
+3,"Cold, Colder",6,4,0
+4,GCHQ,3,1,1
+5,Met Office,5,2,0
+6,Aston Martin,5,2,1
+
+ProjectSkills
+ProjectID,Skill
+4,Maths
+4,Computer Science
+5,Maths
+5,Logistics
+3,History
+3,Crochet
+6,Mechanics
+6,Engineering
+
+Results
+ResultID,ProjectID,LocalTimeGenerated,EpochTimeGenerated
+
+ResultStudentLink
+ResultID,StudentID

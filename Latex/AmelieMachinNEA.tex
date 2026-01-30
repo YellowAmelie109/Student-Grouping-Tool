@@ -215,11 +215,18 @@ After this, I decided to include Excel spreadsheets as an input method [Obj. 1b]
 
 I decided not to include student choice, student personality, special education needs, timetabling restrictions, or preventing grouping the same students together across multiple as adding too many restrictions to the algorithm will make it take it longer to run to create a set of groups that best matches all of these restrictions. These are the restrictions that were lower on Dr Horncastle's priorities. I will also not include timetabling or scheduling as these deviate quite far from my project's scope.
 \subsection{Objectives}
+Objectives beginning with a * are extra objectives, only implemented if time allowed and are not required for the program to meet the scope of the problem.
 \begin{enumerate}
-    \item Data can be entered into the program from external sources
+    \item Data can be entered into the program
         \begin{enumerate} 
             \item Data can be entered manually into the GUI
-            \item Data can be entered through txt, csv, and Excel spreadsheet files
+            \item Student and project data can be entered through file import
+            \begin{enumerate}
+                \item File type can be csv
+                \item *File type can be txt
+                \item *File type can be a SQLite3 database
+                \item *File type can be xlsx
+            \end{enumerate}
             \item Data can be loaded from stores from previous uses of the program
             \item Data can be entered through a combination of other methods
             \item Student data must contain a name, gender, and skills
@@ -229,27 +236,82 @@ I decided not to include student choice, student personality, special education 
             \item Project data must contain a name, maximum group size, minimum group size, whether or not the project must have a group or not, and skill requirements
             \begin{enumerate}
                 \item Name must only contain alphanumeric characters and certain \newline whitelisted characters
-                \item Maximum group size must be greater than 0
-                \item Minimum group size must be greater than or equal to 0
+                \item Maximum group size must be greater than 0 and greater than minimum group size
+                \item Minimum group size must be greater than 0
             \end{enumerate}
-            \item Data can be added, edited, and removed at any time during the program's runtime
-            \item Data must be entered before the algorithm is run
+            \item Settings data must contain a target fitness, max number of iterations, and the size of the populations
+            \begin{enumerate}
+                \item Target fitness but be between 0 and 1
+                \item Max iterations must be a positive integer, not including 0
+                \item Size of populations must be a positive integer, not including 0
+            \end{enumerate}
+            \item *Project and student data can be added, edited, and removed at any time during the program's runtime
+            \item At least one student, at least one project, target fitness, max iterations, and size of populations must all be entered/have values before the algorithm is run
         \end{enumerate}
     \item Students must be grouped together and to a project
         \begin{enumerate}
-            \item All students must be put into a group
-            \item All students must have at least one skill that will allow them to contribute to the project, when possible
+            \item All students must be put into one group each
+            \item *All students must have at least one skill that will allow them to contribute to the project, when possible
             \item Projects must not have more students assigned to it than the maximum limit inputted by the user
             \item Projects must not have less students assigned to it than the minimum limit inputted by the user
-            \item Groups must have a mix of genders
+            \item *Groups must have a mix of genders, when possible
         \end{enumerate}
-    \item The resulting groups can be viewed
+    \item The resulting groups must be viewable
         \begin{enumerate}
-            \item This can be through coloured tables displayed on the GUI that contain the project name, student names, number of students, gender ratio, and skill range
-            \item This can be through a register that displays projects in alphabetical order, grouped with its students in alphabetical order, all coloured to separate from each other, and no other information.
-            \item Both above options must automatically be saved as \dots files in the local file directory.
+            \item The user must have to option of coloured tables displayed on the GUI 
+            \begin{enumerate}
+                \item These tables contain the project name, student names, number of students, gender ratio, and skill range
+                \item Adjacent tables are coloured differently from each other
+            \end{enumerate} 
+            \item The user must have the option of a register layout displayed on the GUI
+            \begin{enumerate}
+                \item Each project and its details are stored in separate boxes with a background distinct from its adjacent neighbours
+                \item Each box contains the project name, and the names of students in that group
+                \item Projects are displayed in alphabetical order
+                \item The students in each group are displayed in alphabetical order
+            \end{enumerate}
+            \item Both above options can be exported to locally stored files
+            \begin{enumerate}
+                \item File type can be csv
+                \item *File type can be txt
+                \item *File type can be xlsx
+            \end{enumerate}
         \end{enumerate}
-    \item All data about projects and students must be stored
+    \item All data must be stored
+    \begin{enumerate}
+        \item The data about projects, students, and results must be stored in relational databases
+        \item The user must have the option to export the databases' contents to locally stored files
+        \begin{enumerate}
+            \item File type can be csv
+            \item *File type can be txt
+            \item *File type can be xlsx
+        \end{enumerate}
+        \item The settings data must be stored as a JSON file
+    \end{enumerate}
+    \item The design must be consistent across all pages
+    \begin{enumerate}
+        \item Text is black with the Arial font
+        \item The top of each page that displays data must feature a header
+        \begin{enumerate}
+            \item The header contains text that provides a title for the data shown
+            \item The title text must be displayed on the left with a significantly larger font to the data shown
+            \item The header colour must be of hex code \#FFDB32
+            \item The header may contain buttons, solely for navigation, on the right
+        \end{enumerate}
+        \item Data about different entities must be visually separate by keeping all the data about each single entity within individual boxes
+        \item Buttons that perform a function that cannot be performed at that time must be greyed out, and feature text below stating how to enable the button
+        \item Buttons that lead to a different page must feature the name of the page, or the relationship between the current page and next (e.g. "back")
+        \item Up to 6 colours can be used to visually separate entities through colour. Red, orange, yellow, green, blue, purple. These colours must have an alpha value of between 10\% and 50\% to ensure the text remains legible
+    \end{enumerate}
+    \item Users must be happy with the program
+    \begin{enumerate}
+        \item 100\% of users must be happy with navigating the program
+        \item 100\% of users must be happy with response times
+        \item 100\% of users must consider the groups outputted by the program to be suitable based on the provided data
+        \item 100\% of users must consider the methods of data entry to be convenient
+        \item 100\% of users must consider the methods of exporting data to be simple
+        \item 100\% of users must be able to read all data shown on the GUI
+    \end{enumerate}
 \end{enumerate}
 
 \clearpage
@@ -338,6 +400,7 @@ I decided not to include student choice, student personality, special education 
     \centering
     \includegraphics[width=1\linewidth]{Figures/databaseDesign.png}
     \caption{An entity relationship diagram showing the one-to-many relationships between the Students and Projects entities and the store of their skills to ensure all fields are atomic so the database is normalised.}
+    \label{fig:databaseDesign}
 \end{figure}
 
 \subsection{Inputs and outputs}
@@ -361,7 +424,7 @@ I decided not to include student choice, student personality, special education 
     &Validate input&Student and StudentSkills tables in database&Display on GUI [Fig. \ref{fig:studentUIDesign}]\\
     \hline
     Settings:\newline
-    - Directory to store and load database\newline
+    - Directory to export database to\newline
     - Target fitness for genetic algorithm\newline
     - Max iterations for genetic algorithm\newline
     - Size of populations for genetic algorithm
@@ -398,7 +461,7 @@ I decided not to include student choice, student personality, special education 
     \hline
     \multicolumn{3}{|c|}{Settings}\\
     \hline
-    Directory to store and load databases&String&- Default is the directory the program is stored in\newline- Must be a valid directory\newline- Program must have read/write permissions in that directory\\
+    Directory to export database&String&- Must be a valid directory\newline- Program must have read/write permissions in that directory\\
     \hline
     Target fitness for genetic algorithm&Float&- Default is 0.9\newline- Must be between 0 and 1 inclusive\\
     \hline
@@ -413,7 +476,7 @@ I decided not to include student choice, student personality, special education 
 \lstinputlisting[label={pseudo:geneticAlgo},caption={Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings.}]{pseudocode.txt}
 
 \subsubsection{Fitness algorithm}
-Still working on it.
+The fitness algorithm takes in the data about the current group and outputs a value between 0-1 that represents the suitability of the students to the project (0 being the worst possible group, 1 being absolutely perfect). This algorithm needs to allow the program to continually converge towards 1, guiding the program in the correct direction and helping it to reject bad solutions.
 
 \subsubsection{Diagrams}
 \begin{figure}[ht]
@@ -428,7 +491,7 @@ Still working on it.
 \section{Technical solution}
 \localtableofcontents
 \vspace{5mm}
-\noindent main.py is the main file that is run by the user. It contains the GUI, and calls to the functions and classes in the other files when needed. All the pages outlined above [Fig. \ref{fig:pageNaviDesign}] have their own classes, whose objects are stored in the window class. The page classes' attributes are mostly widgets, both tkinter widgets and custom widgets (such as Header, ScrollableFrame, SelectionBox, and ProjectBox), or the attributes store the result of user interaction, such as the state of the checkboxes on the project page. The methods all code for the processing and outputting the result of human interaction with the GUI.
+\noindent main.py is the main file that is run by the user. It contains the GUI, and calls to the functions and classes in the other files when needed. All the pages outlined above [Fig. \ref{fig:pageNaviDesign}] have their own classes, whose objects are created dynamically and then stored in the window class. The page classes' attributes are mostly widgets, both tkinter widgets and custom widgets classes (such as Header, ScrollableFrame, SelectionBox, and ProjectBox), or the attributes store the result of user interaction, such as the state of the checkboxes on the project page. The methods all code for the processing and outputting the result of human interaction with the GUI.
 
 
 \vspace{5mm}\noindent
@@ -436,6 +499,31 @@ algoClasses.py contains the Individual, Student, and Project classes for use by 
 
 \vspace{5mm}\noindent
 geneticAlgo.py contains the code for genetic algorithm that calculates the groups. it follows the design of the above pseudocode [Listing \ref{pseudo:geneticAlgo}]
+
+\subsection*{Criteria}
+\begin{longtable}[c]{|m{0.5\linewidth}|m{0.5\linewidth}|}
+    \hline
+    Criteria&Location\\
+    \hline
+    Complex data model in database (eg several interlinked tables)&CreateTables.sql file\\
+    \hline
+    Complex user-defined use of OOP model&-Inheritance. E.g. projectBox inherits from selectionBox\newline-Composition e.g. ScrollableFrame in StudentPage\newline-Polymorphism e.g. the tkraise method in HomePage\newline-Abstract methods e.g. get\_data in selectionBox\\
+    \hline
+    Cross-table parameterised SQL&Initialisation of ProjectPage\\
+    \hline
+    Dynamic generation of objects based on complex user-defined use of OOP model&The show\_frame method of the Window class\\
+    \hline
+    Text files&write\_csv method of the SettingsPage class\\
+    \hline
+    Writing and reading from files&-Writing e.g. write\_csv method of the SettingsPage class\newline-Reading soon\\
+    \hline
+    Dictionaries&frames attribute in Window class\\
+    \hline
+
+
+
+\end{longtable}
+
 \lstset{style=taucode}
 \subsection{main.py}
 \lstinputlisting[language=python]{../Code/main.py}
@@ -446,6 +534,8 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
 \subsection{geneticAlgo.py}
 \lstinputlisting[language=python]{../Code/geneticAlgo.py}
 
+\subsection{CreateTables.sql}
+\lstinputlisting[language=SQL]{../Code/CreateTables.sql}
 
 \section{Testing}
 \begin{figure}[ht]
@@ -480,6 +570,8 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
 \end{figure}
 
 \clearpage
+\subsection{Video}
+\url{https://youtu.be/5m5Lk-DWQd8}
 \section{Evaluation}
 So far, I have created a basic GUI with minimal formatting, and some basic functionality such as page navigation, scrollable frames, project management and student management.
 
