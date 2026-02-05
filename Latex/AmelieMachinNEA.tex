@@ -191,7 +191,9 @@ My third party is Dr Ed Horncastle, the lead teacher for the Exeter Mathematics 
 my school, which is where groups of 3 or 4 students work together on research projects set by 
 University academics or companies. He is suitable because he has to make these groups based on the 
 skills of the students and match them to projects every year, so he has a thorough understanding of 
-how this tool could work and would benefit from using this tool. I interviewed him and asked him the following questions:
+how this tool could work and would benefit from using this tool.
+\subsubsection{Initial interview}
+The following questions were asked before I started to design the program:
 \begin{enumerate}
     \item What is the current process for creating EMC groups? 
         \begin{itemize} \item All the metrics to consider are gathered into a spreadsheet and then groups are formed by hand. \item Some projects don't end up getting groups assigned, especially those that have been set by a company that already has another project with an assigned group.\end{itemize}
@@ -214,6 +216,12 @@ how this tool could work and would benefit from using this tool. I interviewed h
 After this, I decided to include Excel spreadsheets as an input method [Obj. 1b], include options for projects to not have groups assigned despite being a part of the algorithm [Obj. 1f], take genders into account [Obj. 2e], have summary statistics presented alongside the groups [Obj. 3a], have the option to view the groups without any extra information [Obj. 3b], store the data locally for re-use at another time [Obj. 4].
 
 I decided not to include student choice, student personality, special education needs, timetabling restrictions, or preventing grouping the same students together across multiple as adding too many restrictions to the algorithm will make it take it longer to run to create a set of groups that best matches all of these restrictions. These are the restrictions that were lower on Dr Horncastle's priorities. I will also not include timetabling or scheduling as these deviate quite far from my project's scope.
+\subsubsection{Follow-up questions}
+The following questions were asked during designing or coding the technical solution:
+\begin{enumerate}
+    \item I have decided on using three factors to determine how "good" a group is: the number of students with at least one relevant skill to the tasked project; the number of skills required by the project that the group meets; whether or not there are at least two different genders in the group. Could you rate how important these factors are in your opinion, or whether you think any are equal? 
+            \begin{itemize} \item \end{itemize}
+\end{enumerate}
 \subsection{Objectives}
 Objectives beginning with a * are extra objectives, only implemented if time allowed and are not required for the program to meet the scope of the problem.
 \begin{enumerate}
@@ -245,7 +253,7 @@ Objectives beginning with a * are extra objectives, only implemented if time all
                 \item Max iterations must be a positive integer, not including 0
                 \item Size of populations must be a positive integer, not including 0
             \end{enumerate}
-            \item *Project and student data can be added, edited, and removed at any time during the program's runtime
+            \item Project and student data can be added, edited, and removed at any time before the genetic algorithm runs
             \item At least one student, at least one project, target fitness, max iterations, and size of populations must all be entered/have values before the algorithm is run
         \end{enumerate}
     \item Students must be grouped together and to a project
@@ -475,8 +483,28 @@ Objectives beginning with a * are extra objectives, only implemented if time all
 \subsubsection{Pseudocode}
 \lstinputlisting[label={pseudo:geneticAlgo},caption={Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings.}]{pseudocode.txt}
 
+\subsubsection{Generating Initial Groups}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.975\linewidth]{Figures/initialGroupsDesign.png}
+    \caption{A flowchart for the GenInitialGroups subroutine on line 33 of the above pseudocode. It takes a list of all projects and a list of all students as parameters and returns an Individual object}
+    \label{fig:initialGroupsDesign}
+\end{figure}
+
+\clearpage
+
 \subsubsection{Fitness algorithm}
 The fitness algorithm takes in the data about the current group and outputs a value between 0-1 that represents the suitability of the students to the project (0 being the worst possible group, 1 being absolutely perfect). This algorithm needs to allow the program to continually converge towards 1, guiding the program in the correct direction and helping it to reject bad solutions.
+
+
+The factors that need to be considered by the algorithm are:
+\begin{itemize}
+    \item Each student should be able to contribute to their project [Obj. 2b] -- they should have at least one skill that is demanded by the project
+    \item The demands of the project should be met by the students -- the more skills are met by the students, the better the grouping
+    \item There should be a mix of genders [Obj. 2e] -- there must be at least two different genders
+\end{itemize}
+
+These factors are of different levels of importance, 
 
 \subsubsection{Diagrams}
 \begin{figure}[ht]
@@ -572,10 +600,75 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
 \clearpage
 \subsection{Video}
 \url{https://youtu.be/5m5Lk-DWQd8}
+
+\subsection{Testing plan}
+\begin{center}
+\begin{longtable}[c]{ |m{0.05\linewidth}|m{0.1\linewidth}|p{0.35\linewidth}|p{0.2\linewidth}|p{0.2\linewidth}|m{0.1\linewidth}|} 
+    \hline
+    ID&Obj.&Description&Test Data&Expected Results&Time stamp\\ 
+    \hline
+    1&1a,1ei&Check that the student's name must only contain whitelisted characters when entered manually&&&\\
+    \hline
+    2&1a,1e&Check that all student fields are required&&&\\
+    \hline
+    3&1a,1e,4a&Check that the entered student data is saved when all fields are completed correctly&&&\\
+    \hline
+    4&1h,4a&Check that student data can be edited&&&\\
+    \hline
+    5&1h,4a&Check that student data can be deleted&&&\\
+    \hline
+    6&1c&Check that student data is saved from previous uses of the program&&&\\
+    \hline
+    7&1bi,1d&Check that student data can be imported through csv files when all fields are correct&&&\\
+    \hline
+    8&1bi,1ei&Check that student name must only contain whitelisted characters when importing a csv file&&&\\
+    \hline
+    9&1bi,1e&Check that all student fields are required when importing a csv file&&&\\
+    \hline
+    10&1a,1fi&Check that the project's name must only contain whitelisted characters when entered manually&&&\\
+    \hline
+    11&1a,1fii&Check that the project's maximum group size must be greater than minimum group size when entered manually&&&\\
+    \hline
+    12&1a,1fiii&Check that the project's minimum group size must be greater than 0 when entered manually&&&\\
+    \hline
+    13&1a,1f&Check that all project fields are required&&&\\
+    \hline
+    14&1a,1f,4a&Check that the entered project data is saved when all fields are completed correctly&&&\\
+    \hline
+    15&1h,4a&Check that project data can be edited&&&\\
+    \hline
+    16&1h,4a&Check that project data can be deleted&&&\\
+    \hline
+    17&1c&Check that project data is saved from previous uses of the program&&&\\
+    \hline
+    18&1bi,1d&Check that project data can be imported through csv files when all fields are correct&&&\\
+    \hline
+    19&1bi,1fi&Check that project name must only contain whitelisted characters when importing a csv file&&&\\
+    \hline
+    20&1bi,1fii&Check that the project's maximum group size must be greater than minimum group size when importing a csv file&&&\\
+    \hline
+    21&1bi,1fiii&Check that the project's minimum group size must be greater than 0 when importing a csv file&&&\\
+    \hline
+    22&1bi,1f&Check that all project fields are required when importing a csv file&&&\\
+    \hline
+    23&1gi&Check that setting's target fitness must be between 0 and 1&&&\\
+    \hline
+    24&1gii&Check that setting's max iterations must be a positive integer, not including 0&&&\\
+    \hline
+    25&1giii&Check that setting's size of populations must be a positive integer, not including 0&&&\\
+    \hline
+    26&4bi&Check that database can be exported as a csv file&&&\\
+    \hline
+    27&4c&Check that settings data is stored as a JSON&&&\\
+    \hline
+    28&1i&Check that at least one student, one project, target fitness, max iterations, and size of populations must all be entered before the algorithm is run&&&\\
+    \hline
+    
+\end{longtable}
+\end{center}
 \section{Evaluation}
-So far, I have created a basic GUI with minimal formatting, and some basic functionality such as page navigation, scrollable frames, project management and student management.
+\subsection{Self reflection}
 
-I have also created the classes required by the genetic algorithm and made a start coding up my pseudocode for the genetic algorithm.
+\subsection{Third-party feedback}
 
-The fitness algorithm is harder to design than I thought it would be. I got a bit carried away working on the GUI and didn't spend as much time as I needed on the fitness algorithm so I haven't got one yet. I also didn't add much to the design section because of this, so I will add more diagrams to the design section before the next submission.
 \end{document}
