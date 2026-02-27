@@ -7,3 +7,5 @@ Latex/AmelieMachinNEA.out
 Latex/AmelieMachinNEA.synctex.gz
 Code/-- SQLite.sql
 Code/dbTest140126.csv
+Latex/%OUTDIR%
+Code/__pycache__

@@ -35,5 +35,6 @@
         "tkraise",
         "xleftmargin",
         "xrightmargin"
-    ]
+    ],
+    "python.REPL.enableREPLSmartSend": false
 }

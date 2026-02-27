@@ -3,14 +3,17 @@ from tkinter import ttk, filedialog, messagebox
 import sqlite3 as sql
 import csv
 import re
+import geneticAlgo as ga
+#from algoClasses import Student, Project, Individual
 
 #=====GLOBAL CONSTANTS=====
 
 BG_COLOUR="#FFFFFF"
 HEADER_COLOUR="#FFDB32"
+PASTEL_COLOURS=("#FFB3BB","#FFDFBA","#FFFFBA","#BAFFC9","#BAE1FF","#FFBAFF")
 LARGE_FONT=("Arial",30)
 DATABASE = "Code/database.db"
-SQLFILEHEADER="SQLite format 3"
+#SQLFILEHEADER="SQLite format 3"
 
 #=====ROOT WINDOW=====
 #Constants for styling included within
@@ -39,7 +42,7 @@ class Window(tk.Tk):
         self.show_frame(HomePage)
 
     #Method for changing currently open page
-    def show_frame(self, f):
+    def show_frame(self, f,*args,**kwargs):
         #If the page is already loaded, show it
         if f in self.frames.keys():
             frame = self.frames[f]
@@ -48,7 +51,7 @@ class Window(tk.Tk):
             frame = f(self)
             self.frames[f] = frame
             frame.place(relx=0,rely=0,relwidth=1,relheight=1)
-        frame.tkraise()
+        frame.tkraise(*args,**kwargs)
 
     def load_settings(self):
         #Checks for settings.json, if exists load data. If not create settings.json with the default values. Regardless after load settings page into the dict with the required settings as params.
@@ -67,7 +70,7 @@ class HomePage(tk.Frame):
         self.settingsButton = ttk.Button(self,text="Settings",command=lambda:parent.show_frame(SettingsPage))
         self.settingsButton.pack()
 
-        self.label = ttk.Label(self, text="Welcome to AppName Grouping Tool!", font=LARGE_FONT)
+        self.label = ttk.Label(self, text="Welcome to the Student Grouping Tool!", font=LARGE_FONT)
         self.label.pack()
 
         self.projectButton = ttk.Button(self,text="Choose Projects",command=lambda:parent.show_frame(ProjectPage))
@@ -76,7 +79,7 @@ class HomePage(tk.Frame):
         self.studentButton = ttk.Button(self,text="Choose Students",command=lambda:parent.show_frame(StudentPage))
         self.studentButton.pack() 
 
-        self.runButton = ttk.Button(self,text="Create Groups",command=lambda:parent.show_frame(LoadingPage),state="disabled")
+        self.runButton = ttk.Button(self,text="Create Groups",command=self.get_data_for_algo,state="disabled")
         self.runButton.pack() 
 
         self.warning = ttk.Label(self,text="Must choose projects and students first")
@@ -95,6 +98,20 @@ class HomePage(tk.Frame):
         else:
             self.runButton["state"]="disabled"
             self.warning.pack() 
+
+    def get_data_for_algo(self,*args,**kwargs):
+        database=DATABASE
+        projects=self.master.frames[ProjectPage].get_selected()
+        students=self.master.frames[StudentPage].get_selected()
+        settings=self.master.frames[SettingsPage].get_settings()
+        fitness=settings["fitness"]
+        iterations=settings["iterations"]
+        popSize=settings["popSize"]
+        
+        self.master.show_frame(LoadingPage,database,students,projects,fitness,iterations,popSize)
+
+
+
 
 
 class ProjectPage(tk.Frame):
@@ -168,7 +185,14 @@ class ProjectPage(tk.Frame):
         for box in self.projectBoxes:
             if self.projectBoxes[box].check_selection():
                 return True
-        return False    
+        return False   
+
+    def get_selected(self):
+        sel=set()
+        for box in self.projectBoxes:
+            if self.projectBoxes[box].check_selection():
+                sel.add(box)
+        return sel
 
         
     def create_entry_window(self,mode,**kwargs):
@@ -215,10 +239,11 @@ class ProjectPage(tk.Frame):
             maxSize = int(maxSize)
             minSize = int(minSize)
             
-            #Separate skills into a list and remove whitespace
-            skills=skills.split(",")
-            for i in range(len(skills)):
-                skills[i]=skills[i].strip()
+            #Separate skills into a list, remove whitespace, and add to a set to remove duplicates
+            skillList=skills.split(",")
+            skills=set()
+            for i in range(len(skillList)):
+                skills.add(skillList[i].strip())
 
             if mode == "Edit":
                 self.edit_project(kwargs["ID"],name,maxSize,minSize,optional,skills)
@@ -422,6 +447,13 @@ class StudentPage(tk.Frame):
                 return True
         return False  
     
+    def get_selected(self):
+        sel=set()
+        for box in self.studentBoxes:
+            if self.studentBoxes[box].check_selection():
+                sel.add(box)
+        return sel 
+    
     def import_students(self):
         #Show an "Open" dialog box and return an open file object in read mode
         file = filedialog.askopenfile(mode='r',filetypes=[("Supported file types",".txt .csv")]) #Add excel
@@ -465,10 +497,11 @@ class StudentPage(tk.Frame):
         #Validation to ensure all required entries are filled
         if name != "" and gender != "" and skills != "":
 
-            #Separate skills into a list and remove whitespace
-            skills=skills.split(",")
-            for i in range(len(skills)):
-                skills[i]=skills[i].strip()
+            #Separate skills into a list, remove whitespace, add to set to remove duplicates
+            skillList=skills.split(",")
+            skills=set()
+            for i in range(len(skillList)):
+                skills.add(skillList[i].strip())
 
             if mode == "Edit":
                 self.edit_student(kwargs["ID"],name,gender,skills)
@@ -579,13 +612,16 @@ class LoadingPage(tk.Frame):
         self.cancelButton.pack()
 
     #Method override that runs once everytime the page is opened
-    def tkraise(self,*args,**kwargs):
-        tk.Frame.tkraise(self,args,kwargs)
-        #result=run(vars)
-        #if result["status"]==-1:
-            #Display error
-        #else:
-            #ResultsPage()
+    def tkraise(self, database, studentIDs, projectIDs, tgtFit, maxIters, popSize,*args,**kwargs):
+        tk.Frame.tkraise(self)
+        results=ga.run(database,studentIDs,projectIDs,tgtFit,maxIters,popSize)
+        if results["status"]==-1:
+            messagebox.showerror("Error",results["error"])
+        elif results["status"]==0:
+            results=results["results"]
+            self.master.show_frame(ResultsPage,results)
+        else:
+            messagebox.showerror("Error","An unknown eror occured")
 
 
 class ResultsPage(tk.Frame):
@@ -593,22 +629,100 @@ class ResultsPage(tk.Frame):
         #Set up results page layout
         tk.Frame.__init__(self, parent)
 
+        self.results=None
+        self.resultBoxes={}
+
         self.header=Header(self,"Results",HEADER_COLOUR) 
         self.header.pack(fill="x")
 
         self.homeButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage))
         self.homeButton.pack(side="right")
 
+        self.registerButton=ttk.Button(self.header,text="Switch to register layout",style="Header.TButton",command=lambda:parent.show_frame(RegisterPage,self.results))
+        self.registerButton.pack(side="right")
+
+        #Allows scrolling through the boxes
+        self.boxesFrame=ScrollableFrame(self)
+        self.boxesFrame.canvas.pack(fill="both",expand=True)
+        self.update()
+
+    def tkraise(self,results,*args,**kwargs):
+        tk.Frame.tkraise(self)
+        
+        while len(self.resultBoxes)>0:
+            ID=next(iter(self.resultBoxes))
+            self.resultBoxes[ID].pack_forget()
+            del self.resultBoxes[ID]
+
+        self.results=results
+        #Stores the boxes shown in the scrollable frame
+        self.resultBoxes={}
+
+        #Create the boxes and display project data in them
+        for projectID in results:
+            result=results[projectID]
+            self.resultBoxes[projectID]=resultBox(self.boxesFrame,self,projectID,result["name"],result["students"],result["size"],result["genders"],result["skills"])
+            self.resultBoxes[projectID].pack()
+
+        self.update()
+
+    #Method override as a work-around for a scrolling bug
+    def update(self):
+        self.master.state('normal')
+        tk.Frame.update(self)
+        self.master.state('zoomed')
+        
+
 class RegisterPage(tk.Frame):
     def __init__(self,parent):
         #Set up register page layout
         tk.Frame.__init__(self, parent)
+        self.columnconfigure(0,weight=1)
+        self.columnconfigure(1,weight=1)
+        self.columnconfigure(2,weight=2)
+
+        self.results=None
+        self.registerBoxes={}
 
         self.header=Header(self,"Register",HEADER_COLOUR) 
-        self.header.pack(fill="x")
+        self.header.grid(column=0,row=0,columnspan=3,sticky="EW")
 
         self.homeButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage))
         self.homeButton.pack(side="right")
+
+        self.resultsButton=ttk.Button(self.header,text="Switch to results layout",style="Header.TButton",command=lambda:parent.show_frame(ResultsPage,self.results))
+        self.resultsButton.pack(side="right")
+
+        #Allows scrolling through the boxes
+        self.boxesFrame=ScrollableFrame(self)
+        self.boxesFrame.canvas.grid(column=2,row=1,sticky="NES")
+        self.update()
+
+    #Method override as a work-around for a scrolling bug
+    def update(self):
+        self.master.state('normal')
+        tk.Frame.update(self)
+        self.master.state('zoomed')
+
+    def tkraise(self,results,*args,**kwargs):
+        tk.Frame.tkraise(self)
+        
+        while len(self.registerBoxes)>0:
+            ID=next(iter(self.registerBoxes))
+            self.registerBoxes[ID].grid_forget()
+            del self.registerBoxes[ID]
+
+        self.results=results
+        #Stores the boxes shown in the scrollable frame
+        self.registerBoxes={}
+
+        #Create the boxes and display project data in them
+        for projectID in results:
+            result=results[projectID]
+            self.registerBoxes[projectID]=registerBox(self.boxesFrame,self,projectID,result["name"],result["students"])
+            self.registerBoxes[projectID].grid()
+
+        self.update()
 
 
 class SettingsPage(tk.Frame):
@@ -664,7 +778,7 @@ class SettingsPage(tk.Frame):
         tk.Frame.tkraise(self)
     
     def get_settings(self):
-        return {"fitness":self.fitness,"iters":self.iter,"popSize":self.popSize}
+        return {"fitness":self.fitness,"iterations":self.iterations,"popSize":self.popSize}
 
     def go_back(self): #Only show message when setting has been changed
         choice=messagebox.askyesno("Warning","Going back will not save your changes. Do you still wish to proceed?",icon="warning")
@@ -673,6 +787,7 @@ class SettingsPage(tk.Frame):
 
     def validate(self):
         #if re.match("^0(\\.\\d+)?$",) or re.match("1(\\.0*)?$",P):
+        #Also ensure that popsize >=4
             return True
         #return False
 
@@ -887,6 +1002,59 @@ class entryPopupWin(tk.Toplevel):
         ttk.Button(self, text="Save", command=lambda:self.master.save_entry(window,mode,**kwargs)).pack()
         ttk.Button(self, text="Cancel", command=self.destroy).pack()
 
+class resultBox(tk.Frame):
+    count=0
+    def __init__(self,parent,page,ID,name,students:list,size,genders:dict,skills:dict):
+        tk.Frame.__init__(self,parent,relief="solid",bd=2)
+
+        resultBox.count+=1
+        self.colour=PASTEL_COLOURS[(resultBox.count-1)%6]
+        self.config(bg=self.colour)
+
+
+        self.page=page
+        self.ID=ID
+
+        ttk.Label(self,text=name,background=self.colour).pack(anchor="w")
+        ttk.Separator(self).pack(fill="x")
+
+        ttk.Label(self,text=f"Students: {", ".join(students)}",background=self.colour).pack(anchor="w")
+        ttk.Label(self,text=f"Group size: {size}",background=self.colour).pack(anchor="w")
+        
+        ttk.Label(self,text="Genders:",background=self.colour).pack(anchor="w")
+        for gender in genders:
+            ttk.Label(self,text=f"  > {gender}: {genders[gender]}",background=self.colour).pack(anchor="w")
+        
+        ttk.Label(self,text="Skills:",background=self.colour).pack(anchor="w")
+        for skill in skills:
+            ttk.Label(self,text=f"   > {skill}: {skills[skill]}",background=self.colour).pack(anchor="w")
+
+    def pack(self):
+        tk.Frame.pack(self,fill="x",padx=10,pady=5)
+
+class registerBox(tk.Frame):
+    count=0
+    def __init__(self,parent,page,ID,name,students:list):
+        tk.Frame.__init__(self,parent,relief="solid",bd=2)
+
+        registerBox.count+=1
+        self.colour=PASTEL_COLOURS[(registerBox.count-1)%6]
+        self.config(bg=self.colour)
+
+        ttk.Label(self,text=name,background=self.colour).pack(anchor="w")
+        ttk.Separator(self).pack(fill="x")
+
+        for student in students:
+            ttk.Label(self,text=student,background=self.colour).pack(anchor="w")
+
+    def grid(self):
+        tk.Frame.grid(self,column=(registerBox.count-1)%3+1,row=(registerBox.count-1)//3)
+
+
+
+
+        
+
     
 #=====SUBROUTINES=====
 def checkForDB(path):
@@ -899,7 +1067,6 @@ def checkForDB(path):
     if line == "SQLite format 3":
         return True
     return False
-
 
 
 #=====MAIN=====

@@ -49,7 +49,7 @@ REPEAT for i = 1 to MAX_ITERATIONS:
     #Create next population
     REPEAT for j = 1 to 90% of POPULATION_SIZE:
         #Crossover random groupings
-        groups = Mate(random group from population, random group from population) 
+        groups = Crossover(random group from population, random group from population, students)
 
         #Ensure all students appear once
         valid = verifyGroupings(groups)

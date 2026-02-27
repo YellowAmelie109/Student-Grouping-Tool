@@ -193,7 +193,7 @@ University academics or companies. He is suitable because he has to make these g
 skills of the students and match them to projects every year, so he has a thorough understanding of 
 how this tool could work and would benefit from using this tool.
 \subsubsection{Initial interview}
-The following questions were asked before I started to design the program:
+The following questions were asked during the research stage:
 \begin{enumerate}
     \item What is the current process for creating EMC groups? 
         \begin{itemize} \item All the metrics to consider are gathered into a spreadsheet and then groups are formed by hand. \item Some projects don't end up getting groups assigned, especially those that have been set by a company that already has another project with an assigned group.\end{itemize}
@@ -217,10 +217,10 @@ After this, I decided to include Excel spreadsheets as an input method [Obj. 1b]
 
 I decided not to include student choice, student personality, special education needs, timetabling restrictions, or preventing grouping the same students together across multiple as adding too many restrictions to the algorithm will make it take it longer to run to create a set of groups that best matches all of these restrictions. These are the restrictions that were lower on Dr Horncastle's priorities. I will also not include timetabling or scheduling as these deviate quite far from my project's scope.
 \subsubsection{Follow-up questions}
-The following questions were asked during designing or coding the technical solution:
+The following questions were asked during the designing stage:
 \begin{enumerate}
     \item I have decided on using three factors to determine how "good" a group is: the number of students with at least one relevant skill to the tasked project; the number of skills required by the project that the group meets; whether or not there are at least two different genders in the group. Could you rate how important these factors are in your opinion, or whether you think any are equal? 
-            \begin{itemize} \item \end{itemize}
+            \begin{itemize} \item The students being able to contribute is twice as important as the other two factors combined \item Project skills are slightly more important than gender\end{itemize}
 \end{enumerate}
 \subsection{Objectives}
 Objectives beginning with a * are extra objectives, only implemented if time allowed and are not required for the program to meet the scope of the problem.
@@ -251,7 +251,7 @@ Objectives beginning with a * are extra objectives, only implemented if time all
             \begin{enumerate}
                 \item Target fitness but be between 0 and 1
                 \item Max iterations must be a positive integer, not including 0
-                \item Size of populations must be a positive integer, not including 0
+                \item Size of populations must be a positive integer greater than or equal to 4
             \end{enumerate}
             \item Project and student data can be added, edited, and removed at any time before the genetic algorithm runs
             \item At least one student, at least one project, target fitness, max iterations, and size of populations must all be entered/have values before the algorithm is run
@@ -294,7 +294,7 @@ Objectives beginning with a * are extra objectives, only implemented if time all
             \item *File type can be txt
             \item *File type can be xlsx
         \end{enumerate}
-        \item The settings data must be stored as a JSON file
+        \item *The settings data must be stored as a JSON file
     \end{enumerate}
     \item The design must be consistent across all pages
     \begin{enumerate}
@@ -475,36 +475,29 @@ Objectives beginning with a * are extra objectives, only implemented if time all
     \hline
     Max iterations for genetic algorithm&Integer&- Default is 50\newline- Must be a positive integer not including 0\\
     \hline
-    Size of populations for genetic algorithm&Integer&- Default is 100\newline- Must be a positive integer not including 0\\
+    Size of populations for genetic algorithm&Integer&- Default is 100\newline- Must be a positive integer greater than or equal to 4\\
     \hline
 
 \end{longtable}
 \subsection{Algorithm}
 \subsubsection{Pseudocode}
-\lstinputlisting[label={pseudo:geneticAlgo},caption={Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings.}]{pseudocode.txt}
+\lstinputlisting[label={pseudo:geneticAlgo},caption={Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings. Some subroutines have flowcharts below.}]{pseudocode.txt}
 
-\subsubsection{Generating Initial Groups}
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.975\linewidth]{Figures/initialGroupsDesign.png}
-    \caption{A flowchart for the GenInitialGroups subroutine on line 33 of the above pseudocode. It takes a list of all projects and a list of all students as parameters and returns an Individual object}
-    \label{fig:initialGroupsDesign}
-\end{figure}
-
-\clearpage
 
 \subsubsection{Fitness algorithm}
-The fitness algorithm takes in the data about the current group and outputs a value between 0-1 that represents the suitability of the students to the project (0 being the worst possible group, 1 being absolutely perfect). This algorithm needs to allow the program to continually converge towards 1, guiding the program in the correct direction and helping it to reject bad solutions.
+The fitness algorithm takes in the data about the current set of groupings and outputs a value between 0-1 that represents the suitability of the students to each project (0 being the worst possible groupings, 1 being absolutely perfect). This algorithm needs to allow the program to continually converge towards 1, guiding the program in the correct direction and helping it to reject bad solutions.
 
 
 The factors that need to be considered by the algorithm are:
-\begin{itemize}
+\begin{enumerate}
     \item Each student should be able to contribute to their project [Obj. 2b] -- they should have at least one skill that is demanded by the project
     \item The demands of the project should be met by the students -- the more skills are met by the students, the better the grouping
     \item There should be a mix of genders [Obj. 2e] -- there must be at least two different genders
-\end{itemize}
+\end{enumerate}
 
-These factors are of different levels of importance, 
+\noindent These factors are of different levels of importance, so their contribution to the fitness value needs to be weighted. After talking with my third party, we decided on weights of 0.6, 0.25, and 0.15 respectively.
+
+The fitness value for each group is then averaged to form a fitness for the whole set of groupings.
 
 \subsubsection{Diagrams}
 \begin{figure}[ht]
@@ -512,6 +505,20 @@ These factors are of different levels of importance,
     \includegraphics[width=0.7\linewidth]{Figures/geneticClassDesign.png}
     \caption{A class diagram showing the attributes and methods of the classes used by the genetic algorithm, and the relationships between each class.}
     \label{fig:geneticClassDesign}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.975\linewidth]{Figures/initialGroupsDesign.png}
+    \caption{A flowchart for the GenInitialGroups subroutine on line 33 of the above pseudocode. It takes a list of all projects and a list of all students as parameters and returns an Individual object.}
+    \label{fig:initialGroupsDesign}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/mateFlowDesign.png}
+    \caption{A flowchart for the Crossover method on line 52 of the above pseudocode and in the Individual class in the above class diagram. It takes two Individual objects, and the list of students, as parameters and returns an Individual object.}
+    \label{fig:mateFlowDesign}
 \end{figure}
 
 \clearpage
@@ -603,15 +610,15 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
 
 \subsection{Testing plan}
 \begin{center}
-\begin{longtable}[c]{ |m{0.05\linewidth}|m{0.1\linewidth}|p{0.35\linewidth}|p{0.2\linewidth}|p{0.2\linewidth}|m{0.1\linewidth}|} 
+\begin{longtable}[c]{ |m{0.03\linewidth}|m{0.1\linewidth}|p{0.27\linewidth}|p{0.22\linewidth}|p{0.28\linewidth}|m{0.1\linewidth}|} 
     \hline
-    ID&Obj.&Description&Test Data&Expected Results&Time stamp\\ 
+    ID&Obj.&Description&Test Data&Expected Results&Time stamp\\
     \hline
-    1&1a,1ei&Check that the student's name must only contain whitelisted characters when entered manually&&&\\
+    1&1a,1ei&Check that the student's name must only contain whitelisted characters when entered manually&1.1 (Erroneous): \newline 1.2 (Normal): &1.1: A warning message displays to the user, the pop-up window remains open, and the data does not get saved. \newline 1.2: The pop-up window closes, the data is displayed on the GUI and saved to the database.&\\
     \hline
-    2&1a,1e&Check that all student fields are required&&&\\
+    2&1a,1e&Check that all student fields are required&2.1 (Erroneous): \newline 2.2 (Normal): &2.1: A warning message displays to the user, the pop-up window remains open, and the data does not get saved. \newline 2.2: The pop-up window closes, the data is displayed on the GUI and saved to the database.&\\
     \hline
-    3&1a,1e,4a&Check that the entered student data is saved when all fields are completed correctly&&&\\
+    3&1a,1e,4a&Check that the entered student data is saved when all fields are completed correctly&(Normal): &An SQL SELECT statement returns the newly added data.&\\
     \hline
     4&1h,4a&Check that student data can be edited&&&\\
     \hline
@@ -627,7 +634,7 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
     \hline
     10&1a,1fi&Check that the project's name must only contain whitelisted characters when entered manually&&&\\
     \hline
-    11&1a,1fii&Check that the project's maximum group size must be greater than minimum group size when entered manually&&&\\
+    11&1a,1fii&Check that the project's maximum group size must be greater than or equal to minimum group size when entered manually&11.1 (Erroneous): \newline 11.2 (Boundary): \newline 11.3 (Normal):&11.1: A warning message displays to the user, the pop-up window remains open, and the data does not get saved. \newline 1.2: The pop-up window closes, the data is displayed on the GUI and saved to the database. \newline 1.3: The pop-up window closes, the data is displayed on the GUI and saved to the database.&\\
     \hline
     12&1a,1fiii&Check that the project's minimum group size must be greater than 0 when entered manually&&&\\
     \hline
@@ -667,8 +674,16 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
 \end{longtable}
 \end{center}
 \section{Evaluation}
-\subsection{Self reflection}
+\subsection{Objective evaluation}
+The program successfully takes in student and project data, validates it, runs a grouping algorithm, and outputs the results onto a GUI.
 
+[Testing showed that this objective was achieved/not achieved for multiple objectives]
 \subsection{Third-party feedback}
+\begin{enumerate}
+    \item
+\end{enumerate}
+\subsection{Feedback evaluation}
+
+\subsection{Improvements}
 
 \end{document}
