@@ -10,7 +10,7 @@ import geneticAlgo as ga
 
 BG_COLOUR="#FFFFFF"
 HEADER_COLOUR="#FFDB32"
-PASTEL_COLOURS=("#FFB3BB","#FFDFBA","#FFFFBA","#BAFFC9","#BAE1FF","#FFBAFF")
+PASTEL_COLOURS=("#FFBABB","#FFDFBA","#FFFFBA","#BAFFC9","#BAE1FF","#FFBAFF")
 LARGE_FONT=("Arial",30)
 DATABASE = "Code/database.db"
 #SQLFILEHEADER="SQLite format 3"
@@ -36,8 +36,6 @@ class Window(tk.Tk):
         #================
         #Dictionary that stores all loaded pages
         self.frames={}
-        #Load the saved settings
-        self.load_settings()
         #Load the homepage first
         self.show_frame(HomePage)
 
@@ -52,13 +50,6 @@ class Window(tk.Tk):
             self.frames[f] = frame
             frame.place(relx=0,rely=0,relwidth=1,relheight=1)
         frame.tkraise(*args,**kwargs)
-
-    def load_settings(self):
-        #Checks for settings.json, if exists load data. If not create settings.json with the default values. Regardless after load settings page into the dict with the required settings as params.
-        frame=SettingsPage(self,0.9,50,100)
-        self.frames[SettingsPage]=frame
-        frame.place(relx=0,rely=0,relwidth=1,relheight=1)
-        return
 
 #=====PAGES=====
 
@@ -214,6 +205,7 @@ class ProjectPage(tk.Frame):
         else: 
             popupWin=entryPopupWin(self,"New project")
 
+        popupWin.grab_set()
         popupWin.add_string_entry("Name:",name)
 
         popupWin.add_int_entry("Maximum size allowed for this project's group:",maxSize)
@@ -226,6 +218,24 @@ class ProjectPage(tk.Frame):
 
         popupWin.add_save_cancel(popupWin,mode,**data)
 
+    def validate_entry(self,name,maxSize,minSize,optional,skills):
+        if name != "" and maxSize != "" and minSize != "" and optional != "" and skills != "":
+            try:
+                maxSize = int(maxSize)
+                minSize = int(minSize)
+            except:
+                return {"valid":False,"reason":"Minimum group size and maximum group size must be integers"}
+            else:
+                if minSize>0:
+                    if maxSize>=minSize:
+                        return {"valid":True}
+                    else:
+                        return {"valid":False,"reason":"Maximum group size must be greater than or equal to minimum group size."}
+                else:
+                    return {"valid":False,"reason":"Minimum group size must be greater than 0."}
+        else:
+            return {"valid":False,"reason":"All entries must be filled."}
+
     def save_entry(self,window,mode,**kwargs):
         name=kwargs["name"].get()
         maxSize=kwargs["maxSize"].get()
@@ -233,12 +243,8 @@ class ProjectPage(tk.Frame):
         optional=kwargs["optional"].get()
         skills=kwargs["skills"].get()
 
-        #Validation to ensure all required entries are filled
-        if name != "" and maxSize != "" and minSize != "" and skills != "":
-            
-            maxSize = int(maxSize)
-            minSize = int(minSize)
-            
+        valid=self.validate_entry(name,maxSize,minSize,optional,skills)
+        if valid["valid"]:
             #Separate skills into a list, remove whitespace, and add to a set to remove duplicates
             skillList=skills.split(",")
             skills=set()
@@ -253,34 +259,62 @@ class ProjectPage(tk.Frame):
             #Destroy the popup window
             window.destroy()
 
+        else:
+            messagebox.showerror(title="Error",message=valid["reason"])
+
     
     def import_projects(self):
+
+
         def importtxt(path):
             file=open(path,mode="r")
+            file.close()
+
+
         def importcsv(path):
             file=open(path,newline='')
             reader=csv.reader(file)
-            
+            isRow1=True
+            for row in reader:
+                if isRow1 and not row==["name, maxSize, minSize, optional, skills"]:
+                    messagebox.showerror(title="Import Error",message="CSV File not in correct format.")
+                    break
+                isRow1=False
+
+                valid=self.validate_entry(*row)
+                if valid["valid"]:
+                    #Separate skills into a list, remove whitespace, and add to a set to remove duplicates
+                    skillList=row[4].split(",")
+                    skills=set()
+                    for i in range(len(skillList)):
+                        skills.add(skillList[i].strip())
+                        
+                    self.new_project(row[0],row[1],row[2],row[3],skills)
+                else:
+                    messagebox.showerror(title="Import Error",message=f"Import failed. {valid["reason"]}")
+
 
         def importdb(path):
             return
+        
+
         #Show an "Open" dialog box and return file directory
-        path = filedialog.askopenfilename() #Add excel
+        path = filedialog.askopenfilename()
         #Validation to ensure the user selected a valid file type
         if path != None:
             match path[-4:]:
-                case ".txt":
-                    importtxt(path)
+                #case ".txt":
+                    #importtxt(path)
                 case ".csv":
                     importcsv(path)
                 case _:
-                    if checkForDB(path):
-                        importdb(path)
-                    else:
-                        messagebox.showwarning(title="Import Warning", message="File type unrecognised!")
+                    #if checkForDB(path):
+                        #importdb(path)
+                    #else:
+                    messagebox.showerror(title="Import Error", message="File type unrecognised!")
 
         else:
-            messagebox.showwarning(title="Import Warning", message="No file selected!")
+            messagebox.showerror(title="Import Error", message="No file selected!")
 
 
 
@@ -454,17 +488,55 @@ class StudentPage(tk.Frame):
                 sel.add(box)
         return sel 
     
-    def import_students(self):
-        #Show an "Open" dialog box and return an open file object in read mode
-        file = filedialog.askopenfile(mode='r',filetypes=[("Supported file types",".txt .csv")]) #Add excel
-        #Validation to ensure the user selected a file
-        if file == None:
-            return
+    def validate_entry(self,name,gender,skills):
+        if name != "" and gender != "" and skills != "":
+            return {"valid":True}
+        else:
+            return {"valid":False,"reason":"All entries must be filled."}
         
-        #<<<---------------------------------------------
 
-        file.close()
-        return
+    def import_students(self):
+
+        def importcsv(path):
+            file=open(path,newline='')
+            reader=csv.reader(file)
+            isRow1=True
+            for row in reader:
+                if isRow1 and not row==["name, gender, skills"]:
+                    messagebox.showerror(title="Import Error",message="CSV File not in correct format.")
+                    break
+                isRow1=False
+
+                valid=self.validate_entry(*row)
+                if valid["valid"]:
+                    #Separate skills into a list, remove whitespace, and add to a set to remove duplicates
+                    skillList=row[2].split(",")
+                    skills=set()
+                    for i in range(len(skillList)):
+                        skills.add(skillList[i].strip())
+                        
+                    self.new_project(row[0],row[1],skills)
+                else:
+                    messagebox.showerror(title="Import Error",message=f"Import failed. {valid["reason"]}")
+
+
+        #Show an "Open" dialog box and return an open file object in read mode
+        path = filedialog.askopenfilename()
+        #Validation to ensure the user selected a valid file type
+        if path != None:
+            match path[-4:]:
+                #case ".txt":
+                    #importtxt(path)
+                case ".csv":
+                    importcsv(path)
+                case _:
+                    #if checkForDB(path):
+                        #importdb(path)
+                    #else:
+                    messagebox.showerror(title="Import Error", message="File type unrecognised!")
+
+        else:
+            messagebox.showerror(title="Import Error", message="No file selected!")
         
     def create_entry_window(self,mode,**kwargs):
         name=tk.StringVar()
@@ -481,6 +553,8 @@ class StudentPage(tk.Frame):
         else:
             popupWin=entryPopupWin(self,"New student")
 
+        popupWin.grab_set()
+        
         popupWin.add_string_entry("Name:", name)
 
         popupWin.add_string_entry("Gender:",gender)
@@ -494,9 +568,9 @@ class StudentPage(tk.Frame):
         gender=kwargs["gender"].get()
         skills=kwargs["skills"].get()
 
-        #Validation to ensure all required entries are filled
-        if name != "" and gender != "" and skills != "":
-
+        #Validation to ensure all entries meet standards
+        valid=self.validate_entry(name,gender,skills)
+        if valid["valid"]:
             #Separate skills into a list, remove whitespace, add to set to remove duplicates
             skillList=skills.split(",")
             skills=set()
@@ -510,6 +584,8 @@ class StudentPage(tk.Frame):
             
             #Destroy the popup window
             window.destroy()
+        else:
+            messagebox.showerror(title="Error",message=valid["reason"])
 
 
     #Add the inputted data to the Student and StudentSkills tables in the database
@@ -695,7 +771,7 @@ class RegisterPage(tk.Frame):
 
         #Allows scrolling through the boxes
         self.boxesFrame=ScrollableFrame(self)
-        self.boxesFrame.canvas.grid(column=2,row=1,sticky="NES")
+        self.boxesFrame.canvas.grid(column=0,row=1,sticky="NES",rowspan=6,columnspan=3)
         self.update()
 
     #Method override as a work-around for a scrolling bug
@@ -786,10 +862,14 @@ class SettingsPage(tk.Frame):
             self.master.show_frame(HomePage)
 
     def validate(self):
-        #if re.match("^0(\\.\\d+)?$",) or re.match("1(\\.0*)?$",P):
-        #Also ensure that popsize >=4
-            return True
-        #return False
+        if int(self.popSizeVar.get())>=4:
+            if int(self.iterVar.get())>0:
+                return True
+            else:
+                messagebox.showerror(title="Error",message="Max iterations must be greater than 0")
+        else:
+            messagebox.showerror(title="Error",message="Population size must be greater than or equal to 4")
+            return False
 
     #Validate and save settings input
     def save_settings(self):
@@ -844,6 +924,7 @@ class Header(tk.Frame):
 
 class ScrollableFrame(tk.Frame):
     def __init__(self,parent):
+        #The only tkinter widget which supports both scrollbars and embedded widgets is a canvas
         self.canvas=tk.Canvas(parent,background="white")
         tk.Frame.__init__(self,self.canvas)
 
@@ -854,11 +935,11 @@ class ScrollableFrame(tk.Frame):
         self.scrollbar.pack(side="right",fill="y")
         self.scrollbar.update()
 
+        #Assign the scrollbar and scrolling function to the canvas
         self.canvas.create_window((0,0),window=self,anchor='nw',width=self.winfo_screenwidth()-self.scrollbar.winfo_width())
         self.canvas.bind("<Configure>",self.scroll)
-        #self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-    #def _on_mousewheel(self, event):
-        #self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+
     def scroll(self,event):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=self.winfo_width(),height=self.winfo_height())
 
@@ -884,18 +965,24 @@ class selectionBox(tk.Frame):
         self.deleteButton=ttk.Button(self,text="Delete",command=self.delete)
         self.deleteButton.pack()
 
+    #Return whether this item has been selected by the user
     def check_selection(self):
         return self.selected.get()
 
+    #Opens the edit window, which is handled by the page the box is located within
     def edit(self):
         self.page.editBox(self.ID)
     
+    #Ask for confirmation before deletion
+    #Deletion is handled by the page the box is located on
     def delete(self):
         delChoice=messagebox.askyesno(title="Delete entry", message=f"Are you sure you want to delete {self.name}?")
         if delChoice:
+            #Ensure deleted data can never get caught up in the algorithm
             self.selected.set(False)
             self.page.deleteBox(self.ID)
     
+    #Ensure all boxes follow the same design
     def pack(self):
         tk.Frame.pack(self,fill="x",padx=10,pady=5)
 
@@ -927,9 +1014,11 @@ class projectBox(selectionBox):
         self.skillsLabel=ttk.Label(self,text=f"Skills: {", ".join(skills)}")
         self.skillsLabel.pack()
 
+    #Return all the data about the project
     def get_data(self):
         return {"ID":self.ID,"name":self.name,"maxSize":self.maxSize,"minSize":self.minSize,"optional":self.optional,"skills":self.skills}
     
+    #After the user has edited some project data, this method updates its data stores and changes the data shown on the GUI
     def edit_data(self,**kwargs):
         if "name" in kwargs:
             self.name=kwargs["name"]
@@ -959,9 +1048,11 @@ class studentBox(selectionBox):
         self.skillsLabel = ttk.Label(self, text= f"Skills: {", ".join(skills)}")
         self.skillsLabel.pack()
 
+    #Returns all data about the student
     def get_data(self):
         return {"ID":self.ID,"name":self.name,"gender":self.gender,"skills":self.skills}
     
+    #After the user has edited some student data, this method updates its data stores and changes the data shown on the GUI
     def edit_data(self,**kwargs):
         if "name" in kwargs:
             self.name=kwargs["name"]
@@ -973,7 +1064,7 @@ class studentBox(selectionBox):
             self.skills=kwargs["skills"]
             self.skillsLabel.config(text=f"Skills: {", ".join(self.skills)}")
 
-
+#Customisable pop-up widget where different types of entries and buttons can be added dynamically
 class entryPopupWin(tk.Toplevel):
     def __init__(self,parent,title):
         tk.Toplevel.__init__(self,parent)
@@ -1002,11 +1093,14 @@ class entryPopupWin(tk.Toplevel):
         ttk.Button(self, text="Save", command=lambda:self.master.save_entry(window,mode,**kwargs)).pack()
         ttk.Button(self, text="Cancel", command=self.destroy).pack()
 
+
 class resultBox(tk.Frame):
+    #Used for ensuring adjacent boxes have different colours
     count=0
     def __init__(self,parent,page,ID,name,students:list,size,genders:dict,skills:dict):
         tk.Frame.__init__(self,parent,relief="solid",bd=2)
 
+        #Used for ensuring adjacent boxes have different colours
         resultBox.count+=1
         self.colour=PASTEL_COLOURS[(resultBox.count-1)%6]
         self.config(bg=self.colour)
@@ -1029,14 +1123,17 @@ class resultBox(tk.Frame):
         for skill in skills:
             ttk.Label(self,text=f"   > {skill}: {skills[skill]}",background=self.colour).pack(anchor="w")
 
+    #Ensure this widget always follows the same design
     def pack(self):
         tk.Frame.pack(self,fill="x",padx=10,pady=5)
 
 class registerBox(tk.Frame):
+    #Used for ensuring adjacent boxes have different colours
     count=0
     def __init__(self,parent,page,ID,name,students:list):
         tk.Frame.__init__(self,parent,relief="solid",bd=2)
 
+        #Used for ensuring adjacent boxes have different colours
         registerBox.count+=1
         self.colour=PASTEL_COLOURS[(registerBox.count-1)%6]
         self.config(bg=self.colour)
@@ -1047,8 +1144,6 @@ class registerBox(tk.Frame):
         for student in students:
             ttk.Label(self,text=student,background=self.colour).pack(anchor="w")
 
-    def grid(self):
-        tk.Frame.grid(self,column=(registerBox.count-1)%3+1,row=(registerBox.count-1)//3)
 
 
 

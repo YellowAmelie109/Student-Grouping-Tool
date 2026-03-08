@@ -238,12 +238,8 @@ Objectives beginning with a * are extra objectives, only implemented if time all
             \item Data can be loaded from stores from previous uses of the program
             \item Data can be entered through a combination of other methods
             \item Student data must contain a name, gender, and skills
-            \begin{enumerate}
-                \item Name must only contain alphanumeric characters and certain \newline whitelisted characters
-            \end{enumerate}
             \item Project data must contain a name, maximum group size, minimum group size, whether or not the project must have a group or not, and skill requirements
             \begin{enumerate}
-                \item Name must only contain alphanumeric characters and certain \newline whitelisted characters
                 \item Maximum group size must be greater than 0 and greater than minimum group size
                 \item Minimum group size must be greater than 0
             \end{enumerate}
@@ -309,7 +305,7 @@ Objectives beginning with a * are extra objectives, only implemented if time all
         \item Data about different entities must be visually separate by keeping all the data about each single entity within individual boxes
         \item Buttons that perform a function that cannot be performed at that time must be greyed out, and feature text below stating how to enable the button
         \item Buttons that lead to a different page must feature the name of the page, or the relationship between the current page and next (e.g. "back")
-        \item Up to 6 colours can be used to visually separate entities through colour. Red, orange, yellow, green, blue, purple. These colours must have an alpha value of between 10\% and 50\% to ensure the text remains legible
+        \item Up to 6 colours can be used to visually separate entities through colour. Red, orange, yellow, green, blue, purple. These colours must have RGB values all greater than 186 to ensure the text remains legible
     \end{enumerate}
     \item Users must be happy with the program
     \begin{enumerate}
@@ -528,12 +524,8 @@ The fitness value for each group is then averaged to form a fitness for the whol
 \vspace{5mm}
 \noindent main.py is the main file that is run by the user. It contains the GUI, and calls to the functions and classes in the other files when needed. All the pages outlined above [Fig. \ref{fig:pageNaviDesign}] have their own classes, whose objects are created dynamically and then stored in the window class. The page classes' attributes are mostly widgets, both tkinter widgets and custom widgets classes (such as Header, ScrollableFrame, SelectionBox, and ProjectBox), or the attributes store the result of user interaction, such as the state of the checkboxes on the project page. The methods all code for the processing and outputting the result of human interaction with the GUI.
 
-
 \vspace{5mm}\noindent
-algoClasses.py contains the Individual, Student, and Project classes for use by the genetic algorithm. These follow the design of the above class diagram [Fig. \ref{fig:geneticClassDesign}].They are stored in a separate file for re-use across multiple files.
-
-\vspace{5mm}\noindent
-geneticAlgo.py contains the code for genetic algorithm that calculates the groups. it follows the design of the above pseudocode [Listing \ref{pseudo:geneticAlgo}]
+geneticAlgo.py contains the code for genetic algorithm that calculates the groups. The subroutines follow the design of the above pseudocode [Listing \ref{pseudo:geneticAlgo}] and the classes follow the design of the above class diagram [Fig. \ref{fig:geneticClassDesign}].
 
 \subsection*{Criteria}
 \begin{longtable}[c]{|m{0.5\linewidth}|m{0.5\linewidth}|}
@@ -542,17 +534,17 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
     \hline
     Complex data model in database (eg several interlinked tables)&CreateTables.sql file\\
     \hline
-    Complex user-defined use of OOP model&-Inheritance. E.g. projectBox inherits from selectionBox\newline-Composition e.g. ScrollableFrame in StudentPage\newline-Polymorphism e.g. the tkraise method in HomePage\newline-Abstract methods e.g. get\_data in selectionBox\\
+    Complex user-defined use of OOP model&-Inheritance. E.g. projectBox inherits from selectionBox [Line 910]\newline-Composition e.g. ScrollableFrame in StudentPage [Line 406]\newline-Polymorphism e.g. the tkraise method in HomePage [Line 89]\newline-Abstract methods e.g. get\_data in selectionBox [Line 903]\\
     \hline
-    Cross-table parameterised SQL&Initialisation of ProjectPage\\
+    Cross-table parameterised SQL&Line 148\\
     \hline
-    Dynamic generation of objects based on complex user-defined use of OOP model&The show\_frame method of the Window class\\
+    Dynamic generation of objects based on complex user-defined use of OOP model&The show\_frame method of the Window class [Line 51]\\
     \hline
-    Text files&write\_csv method of the SettingsPage class\\
+    Text files&write\_csv method of the SettingsPage class [Line 822]\\
     \hline
-    Writing and reading from files&-Writing e.g. write\_csv method of the SettingsPage class\newline-Reading soon\\
+    Writing and reading from files&-Writing e.g. write\_csv method of the SettingsPage class [Line 822]\newline-Reading e.g. import\_projects method of the ProjectPage class [Line 280]\\
     \hline
-    Dictionaries&frames attribute in Window class\\
+    Dictionaries&frames attribute in Window class [Line 38]\\
     \hline
 
 
@@ -562,9 +554,6 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
 \lstset{style=taucode}
 \subsection{main.py}
 \lstinputlisting[language=python]{../Code/main.py}
-
-\subsection{algoClasses.py}
-\lstinputlisting[language=python]{../Code/algoClasses.py}
 
 \subsection{geneticAlgo.py}
 \lstinputlisting[language=python]{../Code/geneticAlgo.py}
@@ -601,74 +590,73 @@ geneticAlgo.py contains the code for genetic algorithm that calculates the group
 \begin{figure}[ht]
     \centering
     \includegraphics[width=1\linewidth]{Figures/loadingPageTesting.png}
-    \caption{The loading page}
+    \caption{The loading page. It runs the genetic algorithm on page load and opens the results page when results have been returned.}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/resultsPagetesting.png}
+    \caption{The results page}
+\end{figure}
+%\begin{figure}[ht]
+%    \centering
+%    \includegraphics[width=1\linewidth]{}
+%    \caption{The register page}
+%\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/settingsPageTesting.png}
+    \caption{The settings page}
 \end{figure}
 
 \clearpage
 \subsection{Video}
-\url{https://youtu.be/5m5Lk-DWQd8}
+\url{}
+
 
 \subsection{Testing plan}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.98\linewidth]{Figures/testing1-6.png}
+\end{figure}
+\clearpage
 \begin{center}
-\begin{longtable}[c]{ |m{0.03\linewidth}|m{0.1\linewidth}|p{0.27\linewidth}|p{0.22\linewidth}|p{0.28\linewidth}|m{0.1\linewidth}|} 
+\begin{longtable}[c]{ |m{0.03\linewidth}|m{0.1\linewidth}|p{0.24\linewidth}|p{0.25\linewidth}|p{0.28\linewidth}|m{0.1\linewidth}|} 
     \hline
     ID&Obj.&Description&Test Data&Expected Results&Time stamp\\
     \hline
-    1&1a,1ei&Check that the student's name must only contain whitelisted characters when entered manually&1.1 (Erroneous): \newline 1.2 (Normal): &1.1: A warning message displays to the user, the pop-up window remains open, and the data does not get saved. \newline 1.2: The pop-up window closes, the data is displayed on the GUI and saved to the database.&\\
+    8&1a,1fi&Check that the project's maximum group size must be greater than or equal to minimum group size when entered manually&8.1 (Erroneous): \newline 8.2 (Boundary): \newline 8.3 (Normal):&8.1: A warning message displays to the user, the pop-up window remains open, and the data does not get saved. \newline 8.2: The pop-up window closes, the data is displayed on the GUI and saved to the database. \newline 8.3: The pop-up window closes, the data is displayed on the GUI and saved to the database.&\\
     \hline
-    2&1a,1e&Check that all student fields are required&2.1 (Erroneous): \newline 2.2 (Normal): &2.1: A warning message displays to the user, the pop-up window remains open, and the data does not get saved. \newline 2.2: The pop-up window closes, the data is displayed on the GUI and saved to the database.&\\
+    9&1a,1fii&Check that the project's minimum group size must be greater than 0 when entered manually&&&\\
     \hline
-    3&1a,1e,4a&Check that the entered student data is saved when all fields are completed correctly&(Normal): &An SQL SELECT statement returns the newly added data.&\\
+    10&1a,1f&Check that all project fields are required&&&\\
     \hline
-    4&1h,4a&Check that student data can be edited&&&\\
+    11&1a,1f,4a&Check that the entered project data is saved when all fields are completed correctly&&&\\
     \hline
-    5&1h,4a&Check that student data can be deleted&&&\\
+    12&1h,4a&Check that project data can be edited&&&\\
     \hline
-    6&1c&Check that student data is saved from previous uses of the program&&&\\
+    13&1h,4a&Check that project data can be deleted&&&\\
     \hline
-    7&1bi,1d&Check that student data can be imported through csv files when all fields are correct&&&\\
+    14&1c&Check that project data is saved from previous uses of the program&&&\\
     \hline
-    8&1bi,1ei&Check that student name must only contain whitelisted characters when importing a csv file&&&\\
+    15&1bi,1d&Check that project data can be imported through csv files when all fields are correct&&&\\
     \hline
-    9&1bi,1e&Check that all student fields are required when importing a csv file&&&\\
+    16&1bi,1fi&Check that the project's maximum group size must be greater than minimum group size when importing a csv file&&&\\
     \hline
-    10&1a,1fi&Check that the project's name must only contain whitelisted characters when entered manually&&&\\
+    17&1bi,1fii&Check that the project's minimum group size must be greater than 0 when importing a csv file&&&\\
     \hline
-    11&1a,1fii&Check that the project's maximum group size must be greater than or equal to minimum group size when entered manually&11.1 (Erroneous): \newline 11.2 (Boundary): \newline 11.3 (Normal):&11.1: A warning message displays to the user, the pop-up window remains open, and the data does not get saved. \newline 1.2: The pop-up window closes, the data is displayed on the GUI and saved to the database. \newline 1.3: The pop-up window closes, the data is displayed on the GUI and saved to the database.&\\
+    18&1bi,1f&Check that all project fields are required when importing a csv file&&&\\
     \hline
-    12&1a,1fiii&Check that the project's minimum group size must be greater than 0 when entered manually&&&\\
+    19&1gi&Check that setting's target fitness must be between 0 and 1&&&\\
     \hline
-    13&1a,1f&Check that all project fields are required&&&\\
+    20&1gii&Check that setting's max iterations must be a positive integer, not including 0&&&\\
     \hline
-    14&1a,1f,4a&Check that the entered project data is saved when all fields are completed correctly&&&\\
+    21&1giii&Check that setting's size of populations must be a positive integer, not including 0&&&\\
     \hline
-    15&1h,4a&Check that project data can be edited&&&\\
+    22&4bi&Check that database can be exported as a csv file&&&\\
     \hline
-    16&1h,4a&Check that project data can be deleted&&&\\
+    23&4c&Check that settings data is stored as a JSON&&&\\
     \hline
-    17&1c&Check that project data is saved from previous uses of the program&&&\\
-    \hline
-    18&1bi,1d&Check that project data can be imported through csv files when all fields are correct&&&\\
-    \hline
-    19&1bi,1fi&Check that project name must only contain whitelisted characters when importing a csv file&&&\\
-    \hline
-    20&1bi,1fii&Check that the project's maximum group size must be greater than minimum group size when importing a csv file&&&\\
-    \hline
-    21&1bi,1fiii&Check that the project's minimum group size must be greater than 0 when importing a csv file&&&\\
-    \hline
-    22&1bi,1f&Check that all project fields are required when importing a csv file&&&\\
-    \hline
-    23&1gi&Check that setting's target fitness must be between 0 and 1&&&\\
-    \hline
-    24&1gii&Check that setting's max iterations must be a positive integer, not including 0&&&\\
-    \hline
-    25&1giii&Check that setting's size of populations must be a positive integer, not including 0&&&\\
-    \hline
-    26&4bi&Check that database can be exported as a csv file&&&\\
-    \hline
-    27&4c&Check that settings data is stored as a JSON&&&\\
-    \hline
-    28&1i&Check that at least one student, one project, target fitness, max iterations, and size of populations must all be entered before the algorithm is run&&&\\
+    24&1i&Check that at least one student, one project, target fitness, max iterations, and size of populations must all be entered before the algorithm is run&&&\\
     \hline
     
 \end{longtable}
@@ -685,5 +673,7 @@ The program successfully takes in student and project data, validates it, runs a
 \subsection{Feedback evaluation}
 
 \subsection{Improvements}
-
+[Optional objectives]
+[More input data]
+[Exporting outputs]
 \end{document}
