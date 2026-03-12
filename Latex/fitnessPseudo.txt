@@ -1,0 +1,26 @@
+fitness = 0
+
+REPEAT for all projects in individual:
+    skillsMet = set() #Records the skills the students have that the project demands
+    genderCritMet = False #Records whether or not there are multiple genders in the group
+
+    REPEAT for all students in project:
+        #Gets set of skills in common between the student and the project
+        commonSkills = intersection of student skills and project skills
+        #If student has at least one applicable skill, contribute to the fitness with a weight of 0.6
+        IF size of commonSkills >= 1:
+            fitness += 0.6/(number of students in project's group)
+            
+            skillsMet = union of skillsMet and commonSkills
+
+        #There will be at least two genders as soon as one student's gender is different from the first
+        #If this happens, add the weight of 0.15
+        IF not genderCritMet and this student's gender != first student's gender:
+            genderCritMet = True
+            fitness += 0.15
+
+    #The more of the project's skills met by the students, the more of the 0.25 weighting can be added
+    fitness += 0.25*(size of skillsMet / size of project's skills)
+
+#Final fitness score for the individual
+fitness = fitness / number of projects in individual

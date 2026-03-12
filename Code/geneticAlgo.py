@@ -53,11 +53,13 @@ class Project:
                 genderCritMet=True
                 fitness+=0.15
 
+        #Prevents a divide by 0 error when the group is empty
         try:
             fitness+=(stuCount/len(self.group))*0.6
         except:
             pass
         finally:
+            #Prevents a divide by 0 error if the project has no skill requirements
             try:
                 fitness+=(len(skillsMet)/len(self.skills))*0.25
             except: 
@@ -76,6 +78,7 @@ class Project:
         else:
             raise TypeError(f"Expected data with type list or Student, got data of type {type(students)}")
 
+    #For testing
     def __str__(self):
         string = self.name +", "
         for student in self.group:
@@ -104,8 +107,10 @@ class Individual:
     
     #Average the fitness values of each project together to return a float between 0-1
     def calcFitness(self):
+        #A fitness of -1 suggests this individual is broken (e.g. does not have every student) and should not be considered by the algorithm
         if self.fitness==-1:
             return -1
+        
         total=0.000
         for project in self.projects.values():
             total+=project.getFitness()
@@ -147,7 +152,7 @@ class Individual:
             required.remove(projectID)
             project1=self.projects[projectID]
             project2=other.projects[projectID]
-            newProject=Project(projectID,project1.name,project1.skills,project1.maxSize,project1.minSize,project1.optional)
+            newProject=project1.deepcopy()
             #Combine student lists and remove duplicates
             studentOptions=set(project1.group)|set(project2.group)
             #Remove students in a different group by only keeping students that remain in the students set
@@ -201,7 +206,7 @@ class Individual:
             
             #If the project does not yet have a group, add minSize number of students
             if project in optionals:
-                newProject=Project(project.ID,project.name,project.skills,project.maxSize,project.minSize,project.optional)
+                newProject=project.deepcopy()
                 optionals.remove(project)
                 temp=list(students)
                 random.shuffle(temp)

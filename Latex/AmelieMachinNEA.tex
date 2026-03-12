@@ -106,7 +106,7 @@ Students will also benefit from this tool as they would be able to apply their s
     \begin{itemize} 
         \item This tool is used frequently by my teachers to create random groups for group activities. 
         \item The GUI is very simple to use as there is little data that needs to be entered, so can all fit down the left of the screen. 
-        \item The output is very easy to read as each group is visually separated using both coloured boxes and numbering. [Obj. 3b]
+        \item The output is very easy to read as each group is visually separated using both coloured boxes and numbering. [Obj. 3aii, 3bi, 5c]
         \item However, this tool is too simple because it lacks any way to group with conditions, which is part of my scope, as they are purely randomised. This means that teams could quit often be unfairly balanced in terms of skill, or group students together that are known to not work well together. The teacher's only option to solve this is to re-roll until the output is suitable enough for the task manually. This gave me the idea for the algorithm to be the simulation of this re-rolling and selection of optimal outputs.
     \end{itemize}
     \item keamk [Fig. \ref{fig:keamkIn}] [Fig. \ref{fig:keamkOut}] \newline
@@ -127,8 +127,8 @@ Students will also benefit from this tool as they would be able to apply their s
     \item This tool creates groups that all have a balanced level of skill. 
     \item I like how the skill level is inputted as a rating between 1-5 as this is intuitive for the user. 
     \item I also like the extra details that are outputted, such as how many are in each group next to the group name and the skill levels next to each individual. [Obj. 3a]
-    \item Furthermore, the option to go back to make small changes to the data inputted and get new groupings was very quick and useful. [Obj. 1g]
-    \item However, this tool can only create balanced groups, not groups with different objectives as is in my scope, and there is no way to assign a certain number of participants to each group, as the program puts the same number (or one away) of participants in each group. [Obj. 2c-d]
+    \item Furthermore, the option to go back to make small changes to the data inputted and get new groupings was very quick and useful. [Obj. 1h]
+    \item However, this tool can only create balanced groups, not groups with different objectives as is in my scope, and there is no way to assign a certain number of participants to each group, as the program puts the same number (or one away) of participants in each group. [Obj. 1f, 2c, 2d]
     \end{itemize}
 \end{enumerate}
 
@@ -145,22 +145,18 @@ Students will also benefit from this tool as they would be able to apply their s
 \href{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-Formation-Algorithm-Explainer}{https://help.feedbackfruits.com/hc/en-us/articles/23527084211346-Group-\newline Formation-Algorithm-Explainer} 
 to create similar groups then using bipartite matching algorithms to match them. However this only creates groups with similar skill sets, not skill sets that vary based on the project.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{Figures/populationSketchAnalysis}
-    \caption{A sketch showing an example of a population, representing a set of possible solutions (individuals). Each individual represents a possible set of groups, and has a fitness score that represents how well every project's group matches the project's and user's requirements. This is calculated by averaging all the fitness scores of the groups it contains.}
-    \label{fig:populationSketchAnalysis}
-\end{figure}
-
+\vspace{3mm}
 I decided on a genetic algorithm where each individual is made up of a possible solution and the fitness score is an average between how suited each group is to its assigned project [Fig. \ref{fig:populationSketchAnalysis}]. The individuals with higher fitness scores are discarded and the lower ones are randomly selected to crossover to form new individuals. Some of these individuals formed may contain error such as the same student multiple times, or a missing student, so that must be corrected before continuing. Then, random mutations are applied to some individuals, which may involve swapping of students between groups, moving some students to an optional project, or moving some students to group that isn't full. New fitness scores are calculated and the process repeats a predetermined number of times [Fig. \ref{fig:geneticFlowAnalysis}]. I chose this because genetic algorithms are very adaptable to varying conditions and constraints, such as the ones that the user chooses in this program. This will allow the program to test different combinations of projects and students, test different group sizes for a project, and swap in and out optional projects to find better and better solutions until it reaches a high-quality solution that fits all the user's needs. This fits the project scope far better than all previously researched algorithms.
 
+Also, the runtime of a genetic algorithm can be changed without changing the input data, such as by changing how many iterations it undergoes. I found this helpful in testing, especially when trying to group large numbers of students. [Obj. 1g, 6b]
+
 \subsubsection{Inputting data}
-For the inputting of data, I have decided that it can be inputted through txt and csv files [Obj. 1a], manually  on the GUI [Obj. 1b], or any combination of those methods [Obj. 1c]. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. I will also include the option to import the data from an Excel spreadsheet at the request of my third party [Obj. 1b].
+For the inputting of data, I have decided that it can be inputted through txt and csv files [Obj. 1b], manually  on the GUI [Obj. 1a], or any combination of those methods [Obj. 1d]. This is because the data for different individuals and different projects could be stored in different ways within the same system, and manual tweaks may be needed by the user to ensure all data is as is needed by the application. I will also include the option to import the data from an Excel spreadsheet at the request of my third party [Obj. 1biv].
 
 \subsubsection{Accounts}
 I have decided against implementing an account system because I don't think it will provide any value to the program. Accounts are typically used for ensuring data can only be accessed by the users with the correct permissions. As this program will be designed to be run locally, all the data will be stored and only accessible on the machine the program was run on, so the OS can handle user security.
 
-Another reason for accounts is allow users to access their data that has been stored by a third party, especially within a cloud to allow for data to be quickly transferred between devices. I will implement a manual solution to this by allowing users to export and import all the data the program stores and the user can handle that data transfer themselves.
+Another reason for accounts is allow users to access their data that has been stored by a third party, especially within a cloud to allow for data to be quickly transferred between devices. I will implement a manual solution to this by allowing users to export and import all the data the program stores and the user can handle that data transfer themselves [Obj. 1b, 4c, 4d].
 
 \subsubsection{Internal data storage}
 I chose to store the data about the students and projects in their own classes, that are aggregated within an 'individual' class. The student and project classes contain their names, skills and the project will have the recommended group size. The individual will contain a project object, student objects, and current fitness score as well as methods for calculating fitness scores, crossover with other individuals, and mutations. [Fig. \ref{fig:classAnalysis}]
@@ -168,7 +164,7 @@ I chose to store the data about the students and projects in their own classes, 
 This keeps the attributes and methods stored together in the program to make the code easier to read and understand by a programmer.
 
 \subsubsection{External data storage}
-[Obj. 4] I have researched into whether information about projects and students should be stored somewhere, and if so, how. I have concluded that they should be stored in relational databases that are accessible and modifiable by entering the details into the graphical interface, which are passed as parameters into SQL statements. These can then be loaded as a list of checkboxes that can be selected and deselected by the user for that run. [Obj. 1c]
+[Obj. 4a, 4b] I have researched into whether information about projects and students should be stored somewhere, and if so, how. I have concluded that they should be stored in relational databases that are accessible and modifiable by entering the details into the graphical interface, which are passed as parameters into SQL statements. These can then be loaded as a list of checkboxes that can be selected and deselected by the user for that run. [Obj. 1c]
 
 I chose to store the data because being able to make minor changes to the data and then re-running the program quickly is a very valuable feature that could save users' time and energy as they would not have to go through the entire process of entering every piece of data just for small changes to some of the data. This feature is present in keamk's grouping tool, and I found it very useful in my testing.
 
@@ -213,7 +209,7 @@ The following questions were asked during the research stage:
         \begin{itemize} \item Some extra features that could be added is timetabling for what order the projects are presented in, and itinerary for group trips out of school. \end{itemize}
 \end{enumerate}
 
-After this, I decided to include Excel spreadsheets as an input method [Obj. 1b], include options for projects to not have groups assigned despite being a part of the algorithm [Obj. 1f], take genders into account [Obj. 2e], have summary statistics presented alongside the groups [Obj. 3a], have the option to view the groups without any extra information [Obj. 3b], store the data locally for re-use at another time [Obj. 4].
+After this, I decided to include file imports as an input method [Obj. 1b], include options for projects to not have groups assigned despite being a part of the algorithm [Obj. 1f], take genders into account [Obj. 2e], have summary statistics presented alongside the groups [Obj. 3a], have the option to view the groups without any extra information [Obj. 3b], store the data locally for re-use at another time [Obj. 4].
 
 I decided not to include student choice, student personality, special education needs, timetabling restrictions, or preventing grouping the same students together across multiple as adding too many restrictions to the algorithm will make it take it longer to run to create a set of groups that best matches all of these restrictions. These are the restrictions that were lower on Dr Horncastle's priorities. I will also not include timetabling or scheduling as these deviate quite far from my project's scope.
 \subsubsection{Follow-up questions}
@@ -245,11 +241,11 @@ Objectives beginning with a * are extra objectives, only implemented if time all
             \end{enumerate}
             \item Settings data must contain a target fitness, max number of iterations, and the size of the populations
             \begin{enumerate}
-                \item Target fitness but be between 0 and 1
+                \item Target fitness must be between 0 and 1
                 \item Max iterations must be a positive integer, not including 0
                 \item Size of populations must be a positive integer greater than or equal to 4
             \end{enumerate}
-            \item Project and student data can be added, edited, and removed at any time before the genetic algorithm runs
+            \item Project and student data can be edited and removed
             \item At least one student, at least one project, target fitness, max iterations, and size of populations must all be entered/have values before the algorithm is run
         \end{enumerate}
     \item Students must be grouped together and to a project
@@ -274,16 +270,17 @@ Objectives beginning with a * are extra objectives, only implemented if time all
                 \item Projects are displayed in alphabetical order
                 \item The students in each group are displayed in alphabetical order
             \end{enumerate}
-            \item Both above options can be exported to locally stored files
+            \item *Both above options can be exported to locally stored files
             \begin{enumerate}
-                \item File type can be csv
+                \item *File type can be csv
                 \item *File type can be txt
                 \item *File type can be xlsx
             \end{enumerate}
         \end{enumerate}
     \item All data must be stored
     \begin{enumerate}
-        \item The data about projects, students, and results must be stored in relational databases
+        \item The data about projects and students must be stored in relational databases
+        \item *The data about results must be stored in relational databases
         \item The user must have the option to export the databases' contents to locally stored files
         \begin{enumerate}
             \item File type can be csv
@@ -323,6 +320,12 @@ Objectives beginning with a * are extra objectives, only implemented if time all
 \subsection{Modelling}
 \begin{figure}[ht]
     \centering
+    \includegraphics[width=1\linewidth]{Figures/populationSketchAnalysis}
+    \caption{A sketch showing an example of a population, representing a set of possible solutions (individuals). Each individual represents a possible set of groups, and has a fitness score that represents how well every project's group matches the project's and user's requirements. This is calculated by averaging all the fitness scores of the groups it contains.}
+    \label{fig:populationSketchAnalysis}
+\end{figure}
+\begin{figure}[ht]
+    \centering
     \includegraphics[width=0.9\linewidth]{Figures/geneticClassAnalysis.png}
     \caption{Class diagram showing relationships between the classes and their attributes used by the genetic algorithm.}
     \label{fig:classAnalysis}
@@ -330,13 +333,13 @@ Objectives beginning with a * are extra objectives, only implemented if time all
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{Figures/frameClassAnalysis.png}
-    \caption{Class diagram showing relationships between the classes that form the GUI}
+    \caption{Class diagram showing the general relationships between the types of classes that form the GUI}
     \label{fig:frameClassAnalysis}
 \end{figure}
 \begin{figure}
     \centering
     \includegraphics[width=0.89\linewidth]{Figures/geneticFlowAnalysis.png}
-    \caption{Flowchart showing the process for the genetic algorithm}
+    \caption{Flowchart showing a rough outline for the genetic algorithm}
     \label{fig:geneticFlowAnalysis}
 \end{figure}
 
@@ -349,14 +352,14 @@ Objectives beginning with a * are extra objectives, only implemented if time all
 \begin{figure}[ht]
     \centering
     \includegraphics[width=1\linewidth]{Figures/pageNaviDesign.png}
-    \caption{Page navigation diagram showing which pages can navigate to each other. Note: The student and project pages can only navigate to the previous page.}
+    \caption{Page navigation diagram showing which pages can navigate to each other. In the technical solution, the links between the student and project pages, and the loading page are not present in order to prevent user from accidentally cancelling the genetic algorithm.}
     \label{fig:pageNaviDesign}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{Figures/homeUIDesign.png}
-    \caption{Sketch of the homepage layout that is the first page seen upon opening the app. The "Choose Projects" and "Choose Students" lead to the projects and students pages, respectively. The "Create Groups" button leads to the loading page and runs the grouping algorithm with the students and projects the user has selected. It is greyed out and not clickable unless at least one project and student has been selected [Obj. 1h].}
+    \caption{Sketch of the homepage layout that is the first page seen upon opening the app. The "Choose Projects" and "Choose Students" lead to the projects and students pages, respectively. The "Create Groups" button leads to the loading page and runs the grouping algorithm with the students and projects the user has selected. It is greyed out and not clickable unless at least one project and student has been selected [Obj. 1i]. The technical solution also features a button at the top of the page that leads to the settings page}
     \label{fig:homeUIDesign}
 \end{figure}
 \begin{figure}
@@ -374,7 +377,7 @@ Objectives beginning with a * are extra objectives, only implemented if time all
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{Figures/loadingUIDesign.png}
-    \caption{Sketch of the loading page layout. This page features a loading animation, and three buttons. The "View/edit Students" and "View/edit Projects" buttons lead to the Students and Projects pages, respectively [Obj. 1g]. The "Cancel" button ends the algorithm and leads to the home page. Once the algorithm has finished successfully, it moves onto the results page.}
+    \caption{Sketch of the loading page layout. This page features a loading animation, and three buttons. The "View/edit Students" and "View/edit Projects" buttons lead to the Students and Projects pages, respectively [Obj. 1g]. The "Cancel" button ends the algorithm and leads to the home page. Once the algorithm has finished successfully, it moves onto the results page. In the technical solution, the edit students and edit projects buttons are not present because any changes to the input data would mean cancelling the genetic algorithm anyway, so users instead only have the option of cancelling the algorithm to make this clearer.}
     \label{fig:loadingUIDesign}
 \end{figure}
 \begin{figure}
@@ -386,7 +389,7 @@ Objectives beginning with a * are extra objectives, only implemented if time all
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{Figures/registerUIDesign.png}
-    \caption{Sketch of the register page layout. }
+    \caption{Sketch of the register page layout. It features the projects arranged in boxes in a grid layout with only the project name and student names. The projects are arranged in alphabetical order, and the students within each group are arranged in alphabetical order.}
 \end{figure}
 
 \clearpage
@@ -453,15 +456,15 @@ Objectives beginning with a * are extra objectives, only implemented if time all
     \hline
     Optional&Boolean&- Lack of entry is equivalent to entry of false\\
     \hline
-    Skill requirements&String&- Entries separated by commas\\
+    Skill requirements&String&- Required\newline- Entries separated by commas\\
     \hline
     \multicolumn{3}{|c|}{Students}\\
     \hline
     Name&String&- Required\\
     \hline
-    Gender&String&\\
+    Gender&String&- Required\\
     \hline
-    Skills&String&- Entries separated by commas\\
+    Skills&String&- Required\newline- Entries separated by commas\\
     \hline
     \multicolumn{3}{|c|}{Settings}\\
     \hline
@@ -477,7 +480,7 @@ Objectives beginning with a * are extra objectives, only implemented if time all
 \end{longtable}
 \subsection{Algorithm}
 \subsubsection{Pseudocode}
-\lstinputlisting[label={pseudo:geneticAlgo},caption={Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings. Some subroutines have flowcharts below.}]{pseudocode.txt}
+\lstinputlisting[label={pseudo:geneticAlgo},caption={Pseudocode for the function that runs when on the loading page. It ensures it is possible to find groupings with the given requirements, then runs a genetic algorithm to find a good set of groupings. Some subroutines have flowcharts below. The mutate method is unused in the technical solution as the crossover method produces suffucient randomness so designing and coding the mutate method would be a waste of time.}]{pseudocode.txt}
 
 
 \subsubsection{Fitness algorithm}
@@ -495,11 +498,15 @@ The factors that need to be considered by the algorithm are:
 
 The fitness value for each group is then averaged to form a fitness for the whole set of groupings.
 
+This can be seen in the pseudocode below [Listing \ref{pseudo:fitnessAlgo}]
+
+\lstinputlisting[label={pseudo:fitnessAlgo},caption={Pseudocode for the above fitness algorithm. The technical solution differs from this slightly to account for division by 0 and floating point errors.}]{fitnessPseudo.txt}
+
 \subsubsection{Diagrams}
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.7\linewidth]{Figures/geneticClassDesign.png}
-    \caption{A class diagram showing the attributes and methods of the classes used by the genetic algorithm, and the relationships between each class.}
+    \caption{A class diagram showing the attributes and methods of the classes used by the genetic algorithm, and the relationships between each class. The technical solution differs as the database handling occurs in a subroutine, rather than a method so that projects can be sorted into "required" and "optional". Also, no students ever got removed from a project.}
     \label{fig:geneticClassDesign}
 \end{figure}
 
@@ -522,30 +529,46 @@ The fitness value for each group is then averaged to form a fitness for the whol
 \section{Technical solution}
 \localtableofcontents
 \vspace{5mm}
+\noindent All files should always stored in a folder called "Code", alongside a database.db file.
 \noindent main.py is the main file that is run by the user. It contains the GUI, and calls to the functions and classes in the other files when needed. All the pages outlined above [Fig. \ref{fig:pageNaviDesign}] have their own classes, whose objects are created dynamically and then stored in the window class. The page classes' attributes are mostly widgets, both tkinter widgets and custom widgets classes (such as Header, ScrollableFrame, SelectionBox, and ProjectBox), or the attributes store the result of user interaction, such as the state of the checkboxes on the project page. The methods all code for the processing and outputting the result of human interaction with the GUI.
 
 \vspace{5mm}\noindent
 geneticAlgo.py contains the code for genetic algorithm that calculates the groups. The subroutines follow the design of the above pseudocode [Listing \ref{pseudo:geneticAlgo}] and the classes follow the design of the above class diagram [Fig. \ref{fig:geneticClassDesign}].
 
+\vspace{5mm}\noindent
+CreateTable.sql contains the SQL script for creating the database that the program uses to stores data.
+
 \subsection*{Criteria}
+All line numbers are from main.py unless otherwise stated.
 \begin{longtable}[c]{|m{0.5\linewidth}|m{0.5\linewidth}|}
     \hline
     Criteria&Location\\
     \hline
+    \multicolumn{2}{|c|}{Group A Models}\\
+    \hline
     Complex data model in database (eg several interlinked tables)&CreateTables.sql file\\
     \hline
-    Complex user-defined use of OOP model&-Inheritance. E.g. projectBox inherits from selectionBox [Line 910]\newline-Composition e.g. ScrollableFrame in StudentPage [Line 406]\newline-Polymorphism e.g. the tkraise method in HomePage [Line 89]\newline-Abstract methods e.g. get\_data in selectionBox [Line 903]\\
+    Complex user-defined use of OOP model&-Inheritance. E.g. projectBox inherits from selectionBox [Line 1011]\newline-Composition e.g. ScrollableFrame in StudentPage [Line 448]\newline-Polymorphism e.g. the tkraise method in HomePage [Line 88]\newline-Abstract methods e.g. get\_data in selectionBox [Line 1004]\\
     \hline
-    Cross-table parameterised SQL&Line 148\\
+    \multicolumn{2}{|c|}{Group A Algorithms}\\
+    \hline
+    Cross-table parameterised SQL&Line 147\\
+    \hline
+    Complex user-defined algorithms: optimisation&Genetic algorithm in geneticAlgo.py [Line 386]\\
     \hline
     Dynamic generation of objects based on complex user-defined use of OOP model&The show\_frame method of the Window class [Line 51]\\
     \hline
-    Text files&write\_csv method of the SettingsPage class [Line 822]\\
-    \hline
-    Writing and reading from files&-Writing e.g. write\_csv method of the SettingsPage class [Line 822]\newline-Reading e.g. import\_projects method of the ProjectPage class [Line 280]\\
+    \multicolumn{2}{|c|}{Group B Models}\\
     \hline
     Dictionaries&frames attribute in Window class [Line 38]\\
     \hline
+    Text files&write\_csv method of the SettingsPage class [Line 902]\\
+    \hline
+    \multicolumn{2}{|c|}{Group B Algorithms}\\
+    \hline
+    Writing and reading from files&-Writing e.g. write\_csv method of the SettingsPage class [Line 902]\newline-Reading e.g. import\_projects method of the ProjectPage class [Line 274]\\
+    \hline
+    
 
 
 
@@ -675,5 +698,10 @@ The program successfully takes in student and project data, validates it, runs a
 \subsection{Improvements}
 [Optional objectives]
 [More input data]
+[More control over input data]
+[More input methods]
 [Exporting outputs]
+[Design]
+[Storing results db]
+Don't do too many, pick 2-4 ig.
 \end{document}

@@ -4,7 +4,7 @@ import sqlite3 as sql
 import csv
 import re
 import geneticAlgo as ga
-#from algoClasses import Student, Project, Individual
+
 
 #=====GLOBAL CONSTANTS=====
 
@@ -36,8 +36,13 @@ class Window(tk.Tk):
         #================
         #Dictionary that stores all loaded pages
         self.frames={}
+        #Load the settings
+        self.load_settings()
+        #Load the database
+        success=self.load_db()
         #Load the homepage first
-        self.show_frame(HomePage)
+        if success:
+            self.show_frame(HomePage)
 
     #Method for changing currently open page
     def show_frame(self, f,*args,**kwargs):
@@ -51,7 +56,43 @@ class Window(tk.Tk):
             frame.place(relx=0,rely=0,relwidth=1,relheight=1)
         frame.tkraise(*args,**kwargs)
 
+    def load_settings(self):
+        if SettingsPage not in self.frames.keys():
+            frame=SettingsPage(self,0.9,50,100)
+            self.frames[SettingsPage] = frame
+            frame.place(relx=0,rely=0,relwidth=1,relheight=1)
+
+    def load_db(self):
+        if not checkForDB(DATABASE):
+            try:
+                queryFile=open("Code/CreateTables.sql",'r')
+                query=queryFile.read()
+                with sql.connect(DATABASE) as conn:
+                    cur = conn.cursor()
+
+                    cur.executescript(query)
+                    conn.commit()
+                return True
+            except:
+                self.show_frame(BrokenPage,"Database could not be created.")
+                return False
+        return True
+
 #=====PAGES=====
+
+class BrokenPage(tk.Frame):
+    def __init__(self,parent):
+        tk.Frame.__init__(self,parent)
+
+        ttk.Label(self,text="Something went wrong. Please restart the program.", font=LARGE_FONT).pack()
+
+        self.label=ttk.Label(self,text="Reason: Unknown")
+        self.label.pack()
+
+    def tkraise(self, reason="Unknown", *args, **kwargs):
+        self.label.configure(text=f"Reason: {reason}")
+
+
 
 class HomePage(tk.Frame):
     def __init__(self,parent):
@@ -688,6 +729,7 @@ class LoadingPage(tk.Frame):
         self.cancelButton.pack()
 
     #Method override that runs once everytime the page is opened
+    #Runs the genetic algorithm
     def tkraise(self, database, studentIDs, projectIDs, tgtFit, maxIters, popSize,*args,**kwargs):
         tk.Frame.tkraise(self)
         results=ga.run(database,studentIDs,projectIDs,tgtFit,maxIters,popSize)
@@ -697,7 +739,7 @@ class LoadingPage(tk.Frame):
             results=results["results"]
             self.master.show_frame(ResultsPage,results)
         else:
-            messagebox.showerror("Error","An unknown eror occured")
+            messagebox.showerror("Error","An unknown error occured")
 
 
 class ResultsPage(tk.Frame):
@@ -758,10 +800,11 @@ class RegisterPage(tk.Frame):
         self.columnconfigure(2,weight=2)
 
         self.results=None
+        self.boxesFrame=None
         self.registerBoxes={}
 
         self.header=Header(self,"Register",HEADER_COLOUR) 
-        self.header.grid(column=0,row=0,columnspan=3,sticky="EW")
+        self.header.pack(fill="x")
 
         self.homeButton=ttk.Button(self.header,text="Back",style="Header.TButton",command=lambda:parent.show_frame(HomePage))
         self.homeButton.pack(side="right")
@@ -769,41 +812,48 @@ class RegisterPage(tk.Frame):
         self.resultsButton=ttk.Button(self.header,text="Switch to results layout",style="Header.TButton",command=lambda:parent.show_frame(ResultsPage,self.results))
         self.resultsButton.pack(side="right")
 
-        #Allows scrolling through the boxes
-        self.boxesFrame=ScrollableFrame(self)
-        self.boxesFrame.canvas.grid(column=0,row=1,sticky="NES",rowspan=6,columnspan=3)
-        self.update()
-
-    #Method override as a work-around for a scrolling bug
-    def update(self):
-        self.master.state('normal')
-        tk.Frame.update(self)
-        self.master.state('zoomed')
-
     def tkraise(self,results,*args,**kwargs):
         tk.Frame.tkraise(self)
-        
+
+        #Prevent old data from preventing new data from appearing on the GUI
+        if self.boxesFrame!=None:
+            self.boxesFrame.pack_forget()
+
         while len(self.registerBoxes)>0:
             ID=next(iter(self.registerBoxes))
-            self.registerBoxes[ID].grid_forget()
+            self.registerBoxes[ID].place_forget()
             del self.registerBoxes[ID]
 
         self.results=results
-        #Stores the boxes shown in the scrollable frame
+
+        #This frame contains the groups
+        self.boxesFrame=tk.Frame(self)
+        self.boxesFrame.pack(fill="both",expand=True)
+        #Stores the boxes shown in the frame
         self.registerBoxes={}
 
-        #Create the boxes and display project data in them
-        for projectID in results:
-            result=results[projectID]
-            self.registerBoxes[projectID]=registerBox(self.boxesFrame,self,projectID,result["name"],result["students"])
-            self.registerBoxes[projectID].grid()
+        #Find grid size
+        keys=list(results)
+        root=len(keys)**(0.5)
+        if root-int(root)>=0.5:
+            y=(int(root)+1)
+        else:
+            y=(int(root))
+        x=(int(root)+1)
 
-        self.update()
+        #Iterate through data in alphabetical order by project name
+        i=0
+        for projectID, project in sorted(results.items(), key=lambda item: item[1]["name"]):
+            #Create boxes with student names in alphabetical order
+            self.registerBoxes[projectID]=registerBox(self.boxesFrame,self,projectID,project["name"],sorted(project["students"]))
+            #Show boxes on GUI in a grid pattern
+            self.registerBoxes[projectID].place(relx=((i%x)/x)*(1.003),rely=((i//y)/y)*(1.003),relwidth=(1/x)*(0.997),relheight=(1/y)*(0.997))
+            i+=1
 
 
 class SettingsPage(tk.Frame):
     def __init__(self,parent,fitness,iterations,popSize):
-        #Set up swttings page layout
+        #Set up settings page layout
         tk.Frame.__init__(self,parent)
         self.fitness=fitness
         self.iterations=iterations
@@ -856,22 +906,34 @@ class SettingsPage(tk.Frame):
     def get_settings(self):
         return {"fitness":self.fitness,"iterations":self.iterations,"popSize":self.popSize}
 
-    def go_back(self): #Only show message when setting has been changed
+    #Command run by the back button
+    def go_back(self):
         choice=messagebox.askyesno("Warning","Going back will not save your changes. Do you still wish to proceed?",icon="warning")
         if choice:
             self.master.show_frame(HomePage)
 
+    #Validate data entry
     def validate(self):
-        if int(self.popSizeVar.get())>=4:
-            if int(self.iterVar.get())>0:
-                return True
-            else:
-                messagebox.showerror(title="Error",message="Max iterations must be greater than 0")
-        else:
-            messagebox.showerror(title="Error",message="Population size must be greater than or equal to 4")
+        try:
+            popSize=int(self.popSizeVar.get())
+            iterVar=int(self.iterVar.get())
+        except:
+            messagebox.showerror(title="Error",message="")
             return False
+        else:
+            if popSize>=4:
+                if iterVar>0:
+                    return True
+                else:
+                    messagebox.showerror(title="Error",message="Max iterations must be greater than 0")
+                    return False
+            else:
+                messagebox.showerror(title="Error",message="Population size must be greater than or equal to 4")
+                return False
+        return False
+        
 
-    #Validate and save settings input
+    #Save settings input if valid
     def save_settings(self):
         valid=self.validate()
         if valid:
@@ -879,9 +941,10 @@ class SettingsPage(tk.Frame):
             self.iterations=int(self.iterVar.get())
             self.popSize=int(self.popSizeVar.get())
             self.master.show_frame(HomePage)
-            #Update settings.json
 
-    def export_db(self): #The ui for selecting details before selecting directory
+    #The ui for selecting details before selecting directory
+    #Would be used for selecting file type to save as
+    def export_db(self):
         self.write_csv()
     
     #Save database to a csv file
@@ -889,28 +952,30 @@ class SettingsPage(tk.Frame):
         filetype=[("CSV file",".csv")]
         file = filedialog.asksaveasfile(filetypes=filetype, defaultextension=filetype)
         if file is not None:
-            with sql.connect(DATABASE) as conn:
-                cur = conn.cursor()
-                #Fetch names of every table
-                cur.execute("SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';")
-                tables=cur.fetchall()
-                #Fetch all the data from each table
-                for table in tables:
-                    data=cur.execute("SELECT * FROM "+str(table[0]))
+            try:
+                with sql.connect(DATABASE) as conn:
+                    cur = conn.cursor()
+                    #Fetch names of every table
+                    cur.execute("SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%';")
+                    tables=cur.fetchall()
+                    #Fetch all the data from each table
+                    for table in tables:
+                        data=cur.execute("SELECT * FROM "+str(table[0]))
 
-                    #Write to the csv
-                    writer = csv.writer(file)
-                    writer.writerow("")
-                    writer.writerow(table)
-                    #Get attribute names
-                    cols=[]
-                    for col in data.description:
-                        cols.append(col[0])
-                    writer.writerow(cols)
-                    writer.writerows(data)
+                        #Write to the csv
+                        writer = csv.writer(file)
+                        writer.writerow("")
+                        writer.writerow(table)
+                        #Get attribute names
+                        cols=[]
+                        for col in data.description:
+                            cols.append(col[0])
+                        writer.writerow(cols)
+                        writer.writerows(data)
+            except:
+                messagebox.showerror(title="Error", message="An error occured.")
         else:
-            #Warn the user export was not successful
-            return
+            messagebox.showerror(title="Error",message="No file selected.")
         file.close()
 
 #=====WIDGETS=====
@@ -924,7 +989,7 @@ class Header(tk.Frame):
 
 class ScrollableFrame(tk.Frame):
     def __init__(self,parent):
-        #The only tkinter widget which supports both scrollbars and embedded widgets is a canvas
+        #Canvas is the only tkinter widget which supports both scrollbars and embedded widgets
         self.canvas=tk.Canvas(parent,background="white")
         tk.Frame.__init__(self,self.canvas)
 
@@ -1153,15 +1218,18 @@ class registerBox(tk.Frame):
     
 #=====SUBROUTINES=====
 def checkForDB(path):
-    #Database files could have any extension, but they all start with the same first 15 characters.
-    file=open(path,"rb")
-    line=file.read(15)
-    file.close()
-    #Convert binary to string
-    line="".join(chr(x) for x in line)
-    if line == "SQLite format 3":
-        return True
-    return False
+    try:
+        #Database files could have any extension, but they all start with the same first 15 characters.
+        file=open(path,"rb")
+        line=file.read(15)
+        file.close()
+        #Convert binary to string
+        line="".join(chr(x) for x in line)
+        if line == "SQLite format 3":
+            return True
+        return False
+    except:
+        return False
 
 
 #=====MAIN=====
