@@ -1,0 +1,31 @@
+
+Students
+StudentID,Name,Gender
+1,Roland,Male
+2,Judy,Non-binary
+
+StudentSkills
+StudentID,Skill
+1,French
+1,Computer science
+2,Engineering
+2,Maths
+
+Projects
+ProjectID,Name,MaxSize,MinSize,Optional
+1,Google,3,2,0
+2,Dyson,2,1,1
+4,Amazon,4,2,0
+
+ProjectSkills
+ProjectID,Skill
+1,Maths
+1,Computer science
+2,Physics
+4,Computer science
+
+Results
+ResultID,ProjectID,LocalTimeGenerated,EpochTimeGenerated
+
+ResultStudentLink
+ResultID,StudentID

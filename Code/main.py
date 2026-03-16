@@ -12,7 +12,7 @@ BG_COLOUR="#FFFFFF"
 HEADER_COLOUR="#FFDB32"
 PASTEL_COLOURS=("#FFBABB","#FFDFBA","#FFFFBA","#BAFFC9","#BAE1FF","#FFBAFF")
 LARGE_FONT=("Arial",30)
-DATABASE = "Code/database.db"
+DATABASE = "database.db"
 #SQLFILEHEADER="SQLite format 3"
 
 #=====ROOT WINDOW=====
@@ -65,7 +65,9 @@ class Window(tk.Tk):
     def load_db(self):
         if not checkForDB(DATABASE):
             try:
-                queryFile=open("Code/CreateTables.sql",'r')
+                print("yes")
+                queryFile=open("CreateTables.sql",'r')
+                print("yes")
                 query=queryFile.read()
                 with sql.connect(DATABASE) as conn:
                     cur = conn.cursor()
